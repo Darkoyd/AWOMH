@@ -1,0 +1,164 @@
+# The Window
+
+A cabinet wall in the house fills with stickers over time. Each one is someone's personal mark. The
+piece treats the wall as a window: a physical, ever-growing archive that gets sonified. Each time
+someone adds a sticker, the wall is photographed — always the whole sticker area — and that **moment**
+shapes an evolving, long-form generative music piece.
+
+No shared listening experience exists, by design. Each listener renders locally and independently.
+
+**Status:** the chain, the soul rules, and the instrument's shape are settled. The open items are the
+concrete feature set, the per-mapping modes, the camera mounting, end-to-end latency, and two format
+questions. Each component below lists its own.
+**Last updated:** 2026-09-15
+
+---
+
+## 1. This document
+
+This is the only document that describes the whole. It owns four things and nothing else:
+
+1. The bound vocabulary (§2).
+2. The two paths and how the components connect (§3).
+3. The invariants that hold across every component (§4).
+4. The index of components, and the questions that belong to no single one (§5, §6).
+
+Every other decision lives in the component that owns it. A decision and a question live in exactly
+one place. Cite a rule by number (R1 to R20) and a component by folder, never by section number:
+section numbers move, folder names and rule numbers do not.
+
+## 2. Vocabulary (bound — do not use another word for these)
+
+| Term | Meaning | Owner |
+|---|---|---|
+| **Moment** | One photographed state of the wall, showing the whole sticker area. Immutable. Never say "photo". | `01-capture/` |
+| **Reading** | The value of one feature at one instant. It has an id and a declared range. | `03-feature-dsl/` |
+| **Soul** | The published seed. Small, fixed-width, deterministic, shared, kept forever. | `02-extraction/` |
+| **Lineage** | The bounded digest that carries the history of moments forward. | `02-extraction/` |
+| **Extraction** | The method that turns a moment, plus everything before it, into a soul. | `02-extraction/` |
+| **Generator** | Whatever renders sound from a soul. | `07-renderer/` |
+| **Stream** | The viewer-local sequence of CC values the applet sends. Personal, disposable, kept by nobody. | `08-applet/` |
+
+`buffer`, `control`, `perturbation`, `tick`, `tap`, `test source`, and `curve` are applet terms. They
+never appear in extraction, and `curve` never appears in the Mapping DSL.
+
+**The soul and the stream are both randomness derived from an image.** Blurring the two words breaks
+R4, because R4's reproducibility claim only covers the soul.
+
+## 3. The two paths
+
+**The piece.** A moment advances the work. This path runs when someone alters the wall.
+
+```
+[01 Capture]      whole sticker area photographed -> moment
+      |
+[02 Extraction]   moment + lineage -> soul + next lineage          (R1 to R20)
+      |
+[03 Feature DSL]  declared readings from the moment
+      |
+[04 Mapping DSL]  reading -> sound parameter, one declared mode per mapping
+      |           compiles to OSC
+[05 Playground]   Sonic Pi or Overtone. Where Catalina composes. Not the shipped renderer.
+      |           MIDI CC out, native to both engines
+[06 Bridge]       virtual MIDI port on the same machine
+      |
+[07 Renderer]     Strudel in the browser. midin(). Renders locally.
+```
+
+**The instrument.** A viewer tunes what they hear. This path runs while listening.
+
+```
+[02 Extraction]   published soul + moment, read only
+      |
+[08 Applet]       buffer, controls, perturbation, readings -> stream
+      |           MIDI CC out via Web MIDI
+[06 Bridge]       virtual MIDI port
+      |
+[05 Playground]   Sonic Pi
+```
+
+MIDI runs in opposite directions on the two paths. That is deliberate. A virtual MIDI port carries each
+direction separately, so neither path blocks the other. The two paths also run at different rates: the
+piece advances at the rate of the wall (R10), and the instrument advances at the tick rate.
+
+Each listener runs their own instance. No shared audio stream and no central server keep the piece
+running.
+
+## 4. Invariants
+
+These hold across every component. A component may add to them and may never weaken one.
+
+1. **Verified or confirmed.** To **verify** a claim is to find a source for it. To **confirm** a claim is
+   for Catalina to decide it. A claim about a tool, a library, or feasibility is one or the other.
+   Anything unresolved is an open question in the owning component, never a silent assumption. Do not
+   assert a capability from memory. This rule already paid for itself: research showed Strudel's OSC
+   support is send-only, which is why `06-bridge/` is MIDI and not OSC.
+2. **Determinism is the soul's alone.** Extraction is pure and deterministic (R4). Everything downstream
+   of `trigger` and `range` mode is each listener's own and is not reproducible.
+3. **AGPL-3.0-or-later.** Integrating Strudel puts the whole project under AGPL-3.0-or-later. The repo
+   stays public, the source ships alongside the hosted site, and Strudel's copyright notices stay
+   intact. Never propose a proprietary dependency, a private repo, or a closed backend component. Firm,
+   not a preference.
+4. **Static only.** Distribution is a public GitHub repo plus GitHub Pages: no backend, no database, no
+   server-side code, no accounts. Automatic HTTPS, which Web MIDI requires. A 1GB site limit and 100GB
+   of bandwidth per month, both soft. A format the browser cannot parse with what it already provides is
+   a dependency in disguise.
+5. **A virtual MIDI port is local to one machine** and is not visible on a network. One shared static
+   page therefore serves everyone, because each person's local playground feeds their own browser
+   session.
+6. **Stdlib only, no build step.** Python 3.14 with no pip and no third-party module for `scripts/`.
+   Vanilla JavaScript with no build step and no dependency for anything the browser runs. This keeps the
+   site servable by GitHub Pages and the repo AGPL-clean.
+7. **Web MIDI needs a supported browser.** Chrome, Edge, Opera, Samsung Internet, and Firefox 108 and
+   later. Not Safari on macOS or iOS, with no roadmap as of 2026. The renderer and the applet both need
+   one.
+
+## 5. The components
+
+| Folder | Component | Status |
+|---|---|---|
+| `01-capture/` | The wall, the camera, and which captures become moments | Election settled as R19. Camera mounting open. |
+| `02-extraction/` | Soul and lineage. Rules R1 to R20. The publication shape. | Rules settled. Retention and format open. |
+| `03-feature-dsl/` | The readings a moment yields | Shape settled. The concrete feature set open. |
+| `04-mapping-dsl/` | Reading to sound parameter, and the OSC it compiles to | Shape settled. Per-mapping modes open. |
+| `05-playground/` | Sonic Pi or Overtone, where Catalina composes | Settled. Engine choice open, low stakes. |
+| `06-bridge/` | The virtual MIDI port | Settled. |
+| `07-renderer/` | Strudel in the browser | Settled. |
+| `08-applet/` | The viewer instrument | Shape, loop, controls, output, and all five artistic choices settled. Readings and perturbation open. |
+
+Unsettled fragments that need working space live in the owning component's `open/` folder. A file there
+holds the question, the fixed constraints, and the options. It holds no decision, and nothing cites it as
+a source. When a fragment settles, the decision goes into the component README and the working file is
+deleted.
+
+## 6. Questions that belong to no single component
+
+- **End-to-end latency and reliability of the full chain.** Every link is verified alone. The chain is
+  not. This is the only question about the chain as a whole, which is why it is here.
+- **Whether the published site needs the local pipeline at all.** A static soul file could let a Strudel
+  page render with no playground and no virtual MIDI port, which would remove `05-playground/` and
+  `06-bridge/` from the shipped path and leave them as composition tools. Deferred by Catalina on
+  2026-09-08.
+
+## 7. Working method
+
+Settle one fragment at a time. Do not scaffold the next layer while working on this one. `scripts/osc.py`
+is the only code that exists; everything else is design, and code for a component waits on that
+component's open questions.
+
+Use `/verify-claim` before adding a capability claim, and `/log-source` to record the citation in the
+owning component's **Sources** section.
+
+## 8. Sources for the invariants
+
+Every other citation lives in the component that relies on it. These three are cross-cutting, so they live
+here.
+
+- **Strudel's licence** — AGPL-3.0-or-later, confirmed from Strudel's FAQ and licence file. Source:
+  strudel.cc docs, tidalcycles/strudel repo. Full component detail in `07-renderer/`.
+- **GitHub Pages** — free static hosting, automatic HTTPS, a 1GB site size and 100GB monthly bandwidth as
+  soft limits, public repo required on the free tier. Confirmed 2026. Source: multiple independent 2026
+  writeups, cross-checked against each other.
+- **Web MIDI browser support (2026)** — works in Chrome, Edge, Opera, Samsung Internet, and Firefox 108 and
+  later. Unsupported in Safari on macOS and iOS, with no roadmap, citing fingerprinting. Source:
+  web-platform-dx feature tracker, testmuai.com (2026), Super Simple Piano compatibility chart (2026).
