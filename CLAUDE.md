@@ -1,7 +1,8 @@
 # The Window
 
-A cabinet wall fills with stickers over time. Each addition is photographed. That **moment** drives an
-evolving, long-form generative music piece. Every listener renders locally and independently. There is no
+A cabinet wall fills with stickers over time. Each addition is photographed. Every
+**capture** is recorded and folds into the soul. The captures the owner shares are **moments**, and they
+drive an evolving, long-form generative music piece. Every listener renders locally and independently. There is no
 shared listening experience, by design.
 
 ## The documents
@@ -32,12 +33,15 @@ When a fragment settles, write the decision into that component's `README.md` an
 
 ## Vocabulary (bound — do not use another word for these)
 
-- **Moment** — one photographed state of the wall. Immutable. Never say "photo".
+- **Capture** — one photographed state of the wall. Immutable. Every capture is recorded, kept locally,
+  and folds into the lineage. Never say "photo".
+- **Moment** — a capture the owner elects to share. Every moment is a capture. Not every capture is a
+  moment.
 - **Reading** — the value of one feature at one instant. It has an id and a declared range.
 - **Soul** — the published seed. Shared, deterministic, kept forever.
-- **Lineage** — the bounded digest that carries the history of moments forward.
+- **Lineage** — the bounded digest that carries the history of captures forward.
 - **Stream** — the viewer-local CC values the applet sends. Personal, disposable, kept by nobody.
-- **Buffer**, **control**, **perturbation**, **tick**, **tap**, **test source**, **curve** — applet terms
+- **Buffer**, **control**, **perturbation**, **tick**, **tap**, **test source**, **curve**, **probe**, **take** — applet terms
   only. They never appear in extraction, and **curve** never appears in the Mapping DSL.
 
 The soul and the stream are both randomness derived from an image. Blurring the two words breaks R4.
@@ -90,14 +94,16 @@ Pages and keeps the repo AGPL-clean.
 
 Sonic Pi is not installed here, so no link that touches the playground runs on this machine.
 
-`moments/` holds one or two images and nothing else, under R6.
+`moments/` holds one image and nothing else, under R6.
 
 ## Status
 
 The chain, the soul rules, and the applet's shape are settled. What stays open is the concrete feature set,
-the per-mapping modes, the camera mounting, end-to-end latency, moment retention, and the published format.
+the per-mapping modes, capture standardization, end-to-end latency, moment retention, and the published format.
 Treat code under `scripts/` as scaffolding that waits on those answers.
 
 ## Working style
 
-Settle one fragment at a time. Do not scaffold the next layer while working on this one.
+Settle one fragment at a time. Do not scaffold the next layer while working on this one. One exception:
+the laboratory phase of `08-applet/` crosses layers on purpose, because the feature set, the
+standardization method, and the sound are found there by experiment.

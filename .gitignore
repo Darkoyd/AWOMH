@@ -1,0 +1,5 @@
+# Raw camera captures of the wall. Large, local only, never published.
+# They are captures, not moments: moments/ stays at the R6 minimum.
+captures/
+*.CR3
+*.cr3

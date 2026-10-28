@@ -1,15 +1,16 @@
 # 02 — Extraction
 
-**In:** `moment_n` from `01-capture/`, and `lineage_{n-1}` from the repo.
-**Out:** `soul_n` and `lineage_n`. The soul is published and kept forever. The lineage is committed and is
-input to the next extraction only.
+**In:** `capture_n` from `01-capture/`, and `lineage_{n-1}` from the repo.
+**Out:** `lineage_n` for every capture. `soul_n` only when `capture_n` is a moment. The soul is published
+and kept forever. The lineage is committed and is input to the next extraction only.
 **Next:** `03-feature-dsl/` reads the moment. `08-applet/` reads the published soul.
 
 ---
 
 ## 1. What this component is
 
-Extraction turns a moment, plus everything that came before it, into a seed. It is the load-bearing
+Extraction folds a capture, plus everything that came before it, into the lineage. When the capture is a
+moment, it derives a seed from that lineage. It is the load-bearing
 component of the piece: every rule below exists because the soul depends on the **history** of images
 while the repo keeps only the **last** one.
 
@@ -22,46 +23,56 @@ The soul depends on the history of images. The repo keeps only the last moment. 
 only if nothing ever re-reads the history.
 
 > **R1. Extraction is a fold, not a query.**
-> `soul_n, lineage_n = extraction(moment_n, lineage_{n-1})`
-> Extraction sees exactly one moment and one lineage. It may never require access to the archive.
+> `lineage_n = extraction(capture_n, lineage_{n-1})`, and `soul_n` comes from `lineage_n` (R17).
+> Extraction sees exactly one capture and one lineage. It may never require access to the archive. The
+> local capture archive (`01-capture/`) is an archive too.
+> The chain works like a blockchain. Each capture is one block, and every block feeds the end result,
+> seen or not. Replay is the same fold, run from the first capture to the last. It verifies the chain. It
+> is never how a single step is computed.
 
 Everything below follows from R1.
 
 > **R2. The lineage is bounded and small.**
-> Its size must not grow with the number of moments. A lineage that accumulates a per-moment record is a
-> moment archive under a different name. It brings back the weight that R1 exists to avoid.
+> Its size must not grow with the number of captures. A lineage that accumulates a per-capture record is
+> a capture archive under a different name. It brings back the weight that R1 exists to avoid.
 
-> **R3. The lineage is chained, so each soul depends on every moment before it.**
+> **R3. The lineage is chained, so each soul depends on every capture before it.**
 > `lineage_n` comes from `lineage_{n-1}`. The hundredth soul therefore carries the influence of the first
-> moment, and that moment exists nowhere. The wall's history survives as *effect*, not as *record*. The
-> archive is the soul, not the disk.
+> capture, shared or not, and nothing published holds a record of that capture. The wall's history
+> survives as *effect*, not as *record*. The archive is the soul, not the disk.
 > Catalina confirmed on 2026-09-10 that this is what "the soul is built from all the images" means.
+> Confirmed on 2026-10-27: "all the images" means every capture, not only every moment.
 
 > **R4. Extraction is pure and deterministic.**
-> Same moment plus same lineage gives the same soul, on any machine, forever. No wall-clock. No ambient
-> randomness. No unordered iteration. No dependence on file paths or capture metadata. This is not a
-> style preference. The soul is a PRNG seed, and the whole claim of `seed` mode is reproducibility. A
+> Same capture plus same lineage gives the same lineage and the same soul. The same sequence of captures,
+> from the first one, therefore gives the same lineages and the same souls, on any machine, forever.
+> No wall-clock. No ambient randomness. No unordered iteration. No dependence on file paths.
+> One piece of capture metadata is allowed: the timestamp the camera records in the capture. It is used
+> only to fix the order of captures, and that order matches the order in which the stickers were placed.
+> Both points confirmed on 2026-10-27. This is not a style preference. The soul is a PRNG seed, and the whole claim of `seed` mode is reproducibility. A
 > nondeterministic extraction makes that claim false everywhere downstream.
 
 > **R5. The repo keeps souls. It does not keep moments.**
 > Souls are tiny. Keep every one of them, append-only, forever. That log *is* the work's history. It is
 > also the only thing that makes an old state reproducible. Moments are heavy, and the repo keeps them
-> only as far as R6 requires.
+> only as far as R6 requires. A capture that is not a moment never enters the repo.
 
 > **R6. Moment retention is the minimum the declared features need.**
-> One moment if every feature is `:whole` scope. Two, the current and the immediately previous one, if
-> any `:delta` feature exists, because a diff needs both. A feature that needs more history is a decision
-> to carry more weight in the repo. Argue for it. Do not slip it in.
+> One moment. No feature compares two moments: change over time comes from the lineage
+> (`03-feature-dsl/`). A feature that needs more history is a decision to carry more weight in the repo.
+> Argue for it. Do not slip it in. Amended on 2026-10-28, when the `:delta` scope was removed.
 > *Under argument: see `open/moment-retention.md`.*
 
 > **R7. Extraction carries a version, and the version travels with the soul.**
 > An alteration to the extraction alters every future soul. Each soul record states its
 > `extraction_version`. That record keeps R4's promise honest, because it marks which souls compare to
-> which. Old souls stay valid because the repo stored them (R5), not because anything can recompute them.
+> which. Old souls stay valid because the repo stored them (R5). A replay of the capture archive under the
+> same `extraction_version` reproduces them exactly, and that replay is how a soul is verified.
 
 > **R8. Extraction never re-derives an old soul.**
-> Extraction writes a soul once and never recomputes it. A recomputed soul under a newer extraction is a
-> different soul under an old date. Corrections append. They do not rewrite.
+> Extraction writes a soul once and never rewrites it. A replay under the same `extraction_version` must
+> reproduce it bit for bit, and a mismatch is a fault, not a correction. A recomputed soul under a newer
+> extraction is a different soul under an old date. Corrections append. They do not rewrite.
 
 > **R9. Extraction knows nothing about sound.**
 > It emits numbers. No sound parameter, instrument name, frequency, or CC number appears anywhere in
@@ -69,8 +80,8 @@ Everything below follows from R1.
 > extraction side stays sound-agnostic.
 
 > **R10. Publication of a soul is a discrete, deliberate event.**
-> A new soul appears when someone adds a sticker. Not on a timer. Not on every commit. The piece advances
-> at the rate the wall does.
+> A capture happens when someone adds a sticker. A new soul appears when the owner elects a capture as a
+> moment. Neither happens on a timer or on every commit. The piece advances at the rate the wall does.
 
 ## 3. Lineage contents
 
@@ -83,7 +94,7 @@ about the past, and each tier has its own bound. *F* is the number of features.
 | Tier | Field | Remembers | Size |
 |---|---|---|---|
 | 0 — Identity | `chain` | that *this exact* history happened, unrepeatably | 32 bytes |
-| 1 — Age | `generation` | the number of published souls | 1 int |
+| 1 — Age | `generation` | the number of captures folded in | 1 int |
 | 2 — Lifetime | `count`, `mean`, `m2`, `min`, `max` per feature | the slow arc across the whole life of the wall | 5 × F |
 | 3 — Momentum | `ema_fast`, `ema_slow` per feature | the recent direction of movement | 2 × F |
 | 4 — Gesture | last *k* quantised feature frames (*k* ≈ 4) | the short-term texture of recent movement | k × F |
@@ -95,10 +106,10 @@ read. A running mean can say "the wall grew denser over the last year". Tier 3 m
 against the lifetime norm. `ema_fast` minus `ema_slow` gives direction. Variance comes from Welford's
 `m2`, which updates in fixed space.
 
-> **R11. The lineage is bounded by feature count, never by moment count.**
+> **R11. The lineage is bounded by feature count, never by capture count.**
 > This is the operational form of R2. Any field whose size depends on the number of moments is forbidden,
-> however small its per-moment cost. Tier 4's window is legal because *k* is fixed in advance. It becomes
-> illegal the moment *k* means "all of them".
+> however small its per-capture cost. Tier 4's window is legal because *k* is fixed in advance. It becomes
+> illegal once *k* means "all of them".
 
 > **R12. Quantise before hashing.**
 > Feature values enter the chain as fixed-precision integers, never as floats. Hashing the text form of a
@@ -107,12 +118,15 @@ against the lifetime norm. `ema_fast` minus `ema_slow` gives direction. Variance
 > also the honest admission that the soul does not need more precision than the camera earns.
 
 > **R13. The chain is one-way.**
-> The lineage cannot be inverted to recover a moment. It cannot even establish what a moment contained.
-> Once the moments are discarded, they are genuinely gone. What the piece publishes does not recover the
-> wall's images. This property is worth keeping deliberately, because the moments show someone's home.
+> The lineage cannot be inverted to recover a capture. It cannot even establish what a capture contained,
+> or whether a capture was ever elected. The capture images exist only on the owner's machine. What the
+> piece publishes does not recover them. This property is worth keeping deliberately, because the
+> captures show someone's home.
 
-> **R14. The lineage is irreplaceable, and git is its archive.**
-> Nothing can recompute it once the moments are gone. Losing it ends the chain, and any future soul then
+> **R14. The lineage survives in two places: git and the capture archive.**
+> Git holds every committed lineage. A full replay of the capture archive under the same
+> `extraction_version` recomputes every lineage, including the ones between moments that git never held.
+> The chain survives while either survives intact. Losing both ends the chain, and any future soul then
 > starts a new lineage instead of continuing this one. Committing it on every publication means version
 > control already holds every historical lineage, at no extra cost and no extra design effort.
 
@@ -137,10 +151,13 @@ against the lifetime norm. `ema_fast` minus `ema_slow` gives direction. Variance
 > every input to the sound side named, ranged, and visible in the Feature DSL, instead of reaching into
 > internal state.
 
-> **R19. The chain advances only on publication.**
-> One published soul, one link. A discarded photograph, a failed capture, or a retake leaves no trace. The
-> chain counts souls, not shutter presses, so `generation` stays meaningful as the age of the piece.
-> This is also the whole of election: `01-capture/` §2.
+> **R19. The chain advances on every capture. A soul is published only for a moment.**
+> One capture, one link. A retake or a failed capture is a capture, and it folds in. The chain counts
+> captures, so `generation` is the number of times the wall was photographed. Election publishes a soul
+> derived from the lineage at that capture. A capture that is not elected publishes nothing, and its
+> influence reaches the public only through later souls.
+> Confirmed on 2026-10-27. This amends the earlier form, under which an unelected capture left no trace.
+> This is also the whole of election: `01-capture/`.
 
 ## 4. The boundary with interaction
 
@@ -148,7 +165,7 @@ against the lifetime norm. `ema_fast` minus `ema_slow` gives direction. Variance
 > Tools operate on the `trigger` and `range` side. That freshness is already each listener's own. The
 > soul stays fixed, so tuning alters what *this* listener hears. It does not fork the piece, and it does
 > not make an old soul irreproducible. Anything that would alter the soul is not tuning. It is a new
-> moment.
+> capture.
 
 `08-applet/` is that tooling. It writes no soul, no lineage, and no file in the repo. Its output is a
 **stream**: viewer-local, personal, kept by nobody. The soul is shared and kept forever. Those two words
@@ -165,7 +182,7 @@ The repo holds these and serves them statically:
 - `soul/log.jsonl` — every soul, append-only (R5, R8).
 - `soul/lineage.json` — the carried digest (R2). Opaque to the renderer (R18). Input to the next
   extraction only.
-- `moments/` — one or two images (R6), and nothing else.
+- `moments/` — one image (R6), and nothing else.
 
 All of it is text-sized and well inside GitHub Pages' limits. It grows at the rate of the wall, not at the
 rate of the moments.
@@ -175,14 +192,20 @@ The concrete format is open: `open/published-format.md`.
 
 ## 6. Decisions
 
-- Extraction is a fold over one moment and one lineage. It never reads the archive (R1).
+- Extraction is a fold over one capture and one lineage. It never reads the archive (R1).
 - The soul is published and kept forever. Moments are not (R5, R6).
 - The lineage is a fixed-size, tiered digest, and git is its archive (R2, R11, R14).
 - The soul is derived from the lineage and is not equal to it (R17).
 - The generator never reads the lineage. A `:lineage`-scope feature is the only route (R18).
 - Extraction emits numbers and names no sound parameter (R9).
 - Two independent version fields: the extraction version and the lineage schema version (R7, R15).
-- Election equals publication. No new vocabulary for an unelected capture (R19).
+- Every capture folds into the lineage. Only a moment publishes a soul (R19).
+- Captures stay on the owner's machine and never enter the repo (R5, R13).
+- The same sequence of captures gives the same souls. Replay verifies the chain (R4, R7, R8).
+- The camera-recorded timestamp orders the captures, because it matches the order of sticker placement.
+  No other capture metadata enters extraction (R4).
+- A capture of an unchanged wall still advances the lineage. A moment elected from it therefore publishes
+  a new soul (R17, R19).
 - The applet reads the soul and writes nothing (R20).
 
 ## 7. Open questions
@@ -200,10 +223,14 @@ component's own.
 - **What quantisation step does R12 use?** Coarse quantisation hides small wall alterations from the
   chain. Fine quantisation makes camera noise a source of soul movement. This is the same decision as
   "does the soul move smoothly or sharply", seen from the other side.
-- **Does an unchanged wall produce a new soul?** Two moments with no new sticker: the same soul, or does
-  the lineage advance anyway?
 - **Does the soul move smoothly or sharply?** A small alteration to the wall could nudge the soul or
   scramble it. Artistic, and no technical argument settles it.
+- **What breaks a tie between two equal timestamps?** R4 orders captures by timestamp. Two captures in
+  the same clock tick need a rule that is not a file path. Reading the timestamp from a `.cr3` file with
+  the standard library alone is also not verified yet. Run `/verify-claim` first.
+- **Which bytes of a capture enter extraction?** The captures are raw camera files (`.cr3`). R4 holds only
+  if the step from raw file to readings is deterministic on any machine. No decoder for this format is
+  verified for a stdlib-only environment. Run `/verify-claim` before anything relies on one.
 - **Does R6 change?** Working file: `open/moment-retention.md`.
 - **What format do the published files use?** Working file: `open/published-format.md`.
 

@@ -42,8 +42,10 @@ and they appear nowhere else in the project.
 | **Control** | One deterministic parameter the viewer sets. It alters the buffer. |
 | **Perturbation** | The noise the applet adds to the buffer each tick. |
 | **Tick** | One advance of the loop. |
-| **Tap** | The binding of one reading to one output CC. |
+| **Tap** | The binding of one reading to one output CC. In the laboratory phase, a tap binds a probe. |
 | **Curve** | A per-tap function from 0..1 to 0..1. §4.4. It never appears in the Mapping DSL. |
+| **Probe** | A candidate reading. Laboratory only (§5). It has an id and a declared range, and it is not in the Feature DSL. It becomes a reading only when Catalina promotes it into `03-feature-dsl/`. |
+| **Take** | A recording of one laboratory run, saved as a file on the owner's machine. Laboratory only (§5). It is not a stream, and the shipped applet keeps no take. |
 
 The applet does not define **soul**, **lineage**, or **extraction**. Those belong to `02-extraction/`.
 
@@ -340,26 +342,79 @@ The concrete format of the list and of a soul record is not settled here.
 `02-extraction/open/moment-retention.md` holds whether an elected moment keeps an image at all. This
 section states what the applet needs from the format. It states no schema.
 
-## 5. Build order
+## 5. The laboratory phase and the build order
+
+The applet reaches its shipped form through a laboratory phase. Confirmed on 2026-10-28. The laboratory is
+where Catalina plays with the medium before anything about it is fixed. It is how the project finds:
+
+- the feature set (`03-feature-dsl/`),
+- the standardization method for handheld captures (`01-capture/`),
+- the character of the perturbation (§4.3),
+- the sounds worth committing to in `07-renderer/`.
+
+The laboratory produces decisions, not artefacts. A decision it leads to goes into the component that owns
+it. Rough edges cost nothing here.
+
+### 5.1 What the laboratory allows
+
+| | Shipped applet | Laboratory |
+|---|---|---|
+| Images | Published moments only (§4.5) | Two or more test sources at once (§2) |
+| What is read | Readings, under Feature DSL ids | Probes, under free ids |
+| Seed | The soul and session entropy. Hidden. Nothing repeats (§6 item 3). | Visible and settable. The same seed and the same settings repeat the same run. |
+| Output | Live MIDI CC | Live MIDI CC, and takes |
+
+None of the laboratory column ships.
+
+**Images.** The laboratory loads two or more images and shows one at a time. The owner toggles between
+them. The image on screen is the forcing term of §3.1, and the loop runs on it. Confirmed on 2026-10-28.
+The lab still computes every probe for every loaded image and lists the values together. This is the
+standardization test: two captures of an unchanged wall must give nearly equal probes, and a probe that
+moves with the framing feeds camera noise into the lineage. A capture loaded here is a test source. It
+stays on the owner's machine.
+
+The laboratory reads JPEG, never `.cr3`. A capture's `.cr3` file serves soul generation only
+(`02-extraction/`). Confirmed on 2026-10-28. No browser is known to decode `.cr3` (§8).
+
+The laboratory takes its JPEG from inside the `.cr3` file: the embedded `PRVW` preview, 1620 × 1080.
+Hand-written box parsing finds it, and the browser's own decoder decodes it. There is no export step and no
+dependency. Confirmed on 2026-10-28. §8 holds the layout and the test on every local capture.
+
+**Probes.** A probe declares its range and obeys §2: an out-of-range probe fails loudly. A probe id never
+appears in the Feature DSL until Catalina promotes it. Promotion is the moment a probe becomes a reading.
+
+**Seed.** A test source carries no soul, so the laboratory seeds the generator from a seed the owner can
+see and set. A repeatable run makes a fair comparison possible: two perturbation settings on the same
+noise.
+
+**Takes.** A take records one run, tick by tick: the seed, the control values, every probe, and every
+tap's CC value. The lab offers it as a file download to the owner's machine. A take never enters the repo,
+and it reaches no soul and no lineage (R20). It exists so that the owner can shape sound from a run
+offline, in a DAW or in Sonic Pi, before committing to a sound in `07-renderer/`.
+
+**Live output.** The taps send MIDI CC through a virtual port (`06-bridge/`) to any receiver: a DAW or
+`05-playground/`.
+
+### 5.2 Build order
 
 Each step runs and is worth looking at before the next one starts.
 
-1. Load an image and draw it to a canvas.
-2. Readings. Live numbers, no controls.
+1. Load two or more images. Draw one to a canvas, and toggle between them.
+2. Probes. Live numbers for every loaded image, no controls.
 3. Controls. The controls alter the buffer. The canvas follows. Until step 4 exists there is no feedback,
-   so a control acts once on the moment. Step 4 turns that into the equilibrium of §4.2.
-4. Perturbation and the loop.
-5. Output. MIDI out, taps, and a playground `sync` that receives it.
+   so a control acts once on the image. Step 4 turns that into the equilibrium of §4.2.
+4. Perturbation and the loop, with the visible seed.
+5. Output. MIDI out, taps, and takes.
 
-Steps 1 to 4 are a laboratory. Their purpose is to find the feature set, and rough edges cost nothing
-there. Step 5 is where the applet becomes viewer-facing: permission failures, a missing port, and a stable
-reading display all get their care at that step and not before. §4.4 already holds the port-failure rules
-that step 5 implements.
+Steps 1 to 5 are the laboratory. Step 6 is the phase boundary:
 
-§4.5 splits across that boundary. The soul read must work by step 4, because the seed feeds the
-perturbation. The moment picker and its fetch-failure text belong to step 5, next to the port-failure care
-that step already carries. One moment loaded from the repo is enough for steps 1 to 4. Those steps may also
-load a test source (§2) through a file input. Step 5 removes it.
+6. Ship. Promoted probes become readings under Feature DSL ids. The file input, the probes, the seed
+   field, and takes are removed. The moment picker and the soul read of §4.5 arrive. Permission failures,
+   a missing port, and a stable reading display get their care here and not before. §4.4 already holds
+   the port-failure rules that step 6 implements.
+
+The soul read belongs to step 6, because no moment publishes a soul until `02-extraction/` exists. Until
+then the laboratory's visible seed takes its place.
 
 ## 6. Artistic choices
 
@@ -371,11 +426,11 @@ item keeps its number.
    published moments through §4.5 and nothing else.
    It does not ship because the wall is the subject of the instrument. A shipped file input points the
    instrument at anything, and that is the half of this item that alters what the piece is. It exists
-   because steps 1 to 4 are looking for the feature set, and a second image is the cheapest way to see
+   because the laboratory is looking for the feature set, and a second image is the cheapest way to see
    whether a reading tracks the wall or tracks one photograph.
-   A test source carries no soul, so such a session is seeded by item 3's session-start local entropy
-   alone. Item 3's shipped claim is unaffected: in the shipped applet the generator still takes the
-   selected moment's soul and that entropy.
+   A test source carries no soul, so the laboratory seeds it from a visible seed (§5.1). Item 3's
+   shipped claim is unaffected: in the shipped applet the generator still takes the selected moment's
+   soul and that entropy.
    Nothing derived from a test source is a reading of the wall. It produces no soul and no lineage, the
    applet writes no file (R20, §1), and `moments/` stays as R6 leaves it. §3.2 is unaffected: any image is
    scaled once, on load, into the fixed square working buffer, so both kinds use one load path.
@@ -390,6 +445,8 @@ item keeps its number.
    nowhere (R20). A session therefore happens once. Nobody can replay it, send it to somebody else, or
    investigate it by running it again. That is the declared cost of the choice, in the same way §3.1
    declares the cost of `a = 0`.
+   The laboratory is exempt, and the exemption ends at the phase boundary. Its seed is visible and
+   settable, and a run repeats (§5.1). Confirmed on 2026-10-28.
    What every viewer shares is the soul, not the stream. Two viewers who select the same moment start from
    the same skeleton and diverge on the first tick. That is R4, and it is not shared listening. The soul
    with the tick rate names that shared start. It is not a record, and it replays nothing. A seed is not a
@@ -407,8 +464,28 @@ item keeps its number.
 
 - **§4.1 Readings.** Waits on `03-feature-dsl/`. Working file: `open/readings.md`.
 - **§4.3 Perturbation.** Unblocked. Working file: `open/perturbation.md`.
+- **Does the browser decode the extracted preview?** It is baseline JPEG (§8), and not yet run in a
+  browser. Build step 1 runs it. If it fails, the fallback is a JPEG the owner exports.
+- **Is 1620 × 1080 enough?** The applet scales every image into its fixed working buffer (§3.2), and the
+  buffer's size is not stated yet.
+- **What format does a take use?** It must open in a DAW or in Sonic Pi without a converter the repo
+  carries. Not settled.
+- **Does a toggle restart the loop?** A new forcing term can restart the buffer from the new image, as
+  §4.5 does for a new moment, or keep the buffer and let the blend pull it across. Found by use.
 
 ## 8. Sources
+
+- **Canon `.cr3` container.** An ISO BMFF (ISO/IEC 14496-12) file with Canon custom boxes. It embeds a
+  1620 × 1080 JPEG preview in a top-level `uuid` box `eaf42b5e-1c98-4b88-b9fb-b7dc406e4d16`, inside a
+  `PRVW` box: JPEG size at offset 20, JPEG data from offset 24. It also embeds a 6000 × 4000 JPEG in
+  track 1 and a 160 × 120 thumbnail. Source: lclevy/canon_cr3, observed 2026-10-28.
+  <https://github.com/lclevy/canon_cr3>
+  Tested 2026-10-28 on all 23 local captures with a stdlib parser: every one holds a 1620 × 1080 preview
+  that starts `FFD8`, ends `FFD9`, and is baseline JPEG (`SOF0`, marker `FFC0`).
+- **Browsers decode no camera raw format.** MDN's image type guide lists APNG, AVIF, GIF, JPEG, JPEG XL,
+  PNG, SVG, and WebP, plus BMP, ICO, TIFF, and XBM. No camera raw format appears. This does not prove
+  absence, and no source states that any browser decodes `.cr3`. Observed 2026-10-28.
+  <https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Formats/Image_types>
 
 - **A browser page sends MIDI.** `MIDIOutput.send()` works in Chrome, Edge, and Firefox 108 and later. The
   browser asks the viewer for permission. Safari does not support it.

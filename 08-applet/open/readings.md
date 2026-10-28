@@ -18,18 +18,17 @@ What does the readings section show, and how does it show a range?
   `03-feature-dsl/`
 - A reading stays inside its declared range. An out-of-range reading is a broken extractor and must fail
   loudly. — §2
+- Before the feature set exists, the section shows probes. That is the laboratory phase. — §5.1
 - Readings are taken after the blend, from the same buffer state that is drawn. Step 4 of the tick. — §3.3
 - Sharing ids does not make the applet an extractor. It shares the vocabulary, not the role. — R20
 
 ## Open
 
 1. Which features come first, and how many. This is the blocker, and it is `03-feature-dsl/`'s question.
-2. What the section shows before the feature set exists. A placeholder set is a real risk: a placeholder id
-   that reaches the Feature DSL becomes vocabulary by accident.
-3. How a value and its range appear together. A number with the range beside it, a bar inside the range, or
+2. How a value and its range appear together. A number with the range beside it, a bar inside the range, or
    both.
-4. What "fail loudly" looks like on screen for an out-of-range reading.
-5. Whether the display updates every tick at 30 Hz, or at a slower rate that a person can read. The reading
+3. What "fail loudly" looks like on screen for an out-of-range reading.
+4. Whether the display updates every tick at 30 Hz, or at a slower rate that a person can read. The reading
    itself is taken every tick either way.
 
 ## To verify

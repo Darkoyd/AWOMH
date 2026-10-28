@@ -1,6 +1,6 @@
 # 03 — Feature DSL
 
-**In:** the current moment, the previous moment when a `:delta` feature exists, and the lineage.
+**In:** the current moment and the lineage.
 **Out:** **readings** — plain numbers and vectors, each with an id and a declared range.
 **Next:** `04-mapping-dsl/`. The same ids also serve `08-applet/`.
 
@@ -32,7 +32,6 @@ Scope means "what this feature may read".
 | Scope | Reads | Notes |
 |---|---|---|
 | `:whole` | the current moment | Always available, including for the very first moment. |
-| `:delta` | the current and the previous moment | Requires R6's two-moment retention. Undefined for the first moment. That is a normal state, not an error. |
 | `:lineage` | the current moment and the lineage | How a feature perceives history under R1. Bounded by R2. |
 
 `:lineage` scope exists because of R18: the generator never reads lineage tiers directly. A mapping that
@@ -40,6 +39,10 @@ wants to hear the wall's long arc declares that arc as a `:lineage` feature, so 
 side is named, ranged, and visible here instead of reaching into internal state.
 
 ## 4. Decisions
+
+- **No feature compares two moments.** There is no `:delta` scope. Change between captures comes from the
+  lineage, which already holds momentum, variance, and the recent gesture (`02-extraction/`). A feature
+  that wants to hear change declares it with `:lineage` scope. Confirmed on 2026-10-28.
 
 - **Every feature declares whether it feeds the soul.** A soul-bearing feature must satisfy R4 strictly. A
   feature that only colours the surface may be looser. Mixing the two silently is what makes a
@@ -55,17 +58,17 @@ side is named, ranged, and visible here instead of reaching into internal state.
 ## 5. Open questions
 
 - **The concrete feature set: which readings get defined first, and how many?** This is the piece's
-  largest open item, and four other components wait on it:
+  largest open item, and three other components wait on it:
   - `02-extraction/` cannot size the lineage tiers without *F*.
   - `04-mapping-dsl/` cannot assign per-mapping modes to features that do not exist.
   - `08-applet/`'s readings section has nothing to display.
-  - `01-capture/`'s camera question becomes urgent the moment a `:delta` feature is declared.
 
-  A placeholder set is a real risk: a placeholder id that reaches this DSL becomes vocabulary by
-  accident.
-- **`:delta` presumes pixel alignment**, which holds only for a fixed camera. `01-capture/` owns the
-  camera question, so every `:delta` feature currently rests on an unverified premise. A size check
-  catches a moved camera. It does not catch a nudged one.
+  The set is found by experiment, in `08-applet/`'s laboratory phase. A candidate there is a **probe**,
+  not a reading. A probe enters this DSL only when Catalina promotes it, so no placeholder id becomes
+  vocabulary by accident.
+- **Does a feature survive handheld framing?** The camera is handheld (`01-capture/`). A feature whose
+  value moves when the framing moves feeds camera noise into the lineage, and the lineage then reports
+  that noise as change in the wall. `01-capture/` owns the standardization question.
 
 ## 6. Sources
 

@@ -10,9 +10,9 @@
 Catalina stated on 2026-09-10 that the owner elects which captures get shared, and that an elected one
 keeps its image next to its soul.
 
-Half of that is already settled and it is R19: the chain advances only on publication, so an unelected
-capture produces no soul and leaves no trace. Election is publication. `01-capture/` §2 states it. Do not
-reopen that half.
+Half of that is already settled and it is R19: every capture folds into the lineage, and only an elected
+capture — a moment — publishes a soul. Captures stay on the owner's machine and never enter the repo.
+`01-capture/` states it. Do not reopen that half.
 
 What stays open: **does R6 change, so that every elected moment keeps its image forever?**
 
@@ -20,9 +20,11 @@ What stays open: **does R6 change, so that every elected moment keeps its image 
 
 - Extraction sees exactly one moment and one lineage. — R1
 - The lineage is bounded and does not grow with the number of moments. — R2
-- The hundredth soul carries the influence of the first capture, as effect and not as record. — R3
+- The hundredth soul carries the influence of the first capture, shared or not, as effect and not as
+  record. — R3
+- Captures that are not moments never enter the repo. This question is about moments only. — R5, R19
 - The repo keeps every soul, append-only, forever. — R5
-- Retention is the minimum the declared features need: one image, or two when a `:delta` feature exists.
+- Retention is the minimum the declared features need: one image. No feature compares two moments.
   More history is a decision to carry more weight, and R6 says to argue for it. — R6
 - Extraction never re-derives an old soul. Corrections append. — R8
 - Static only, 1GB site limit. — root `README.md` §4

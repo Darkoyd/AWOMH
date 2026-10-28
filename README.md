@@ -2,15 +2,16 @@
 
 A cabinet wall in the house fills with stickers over time. Each one is someone's personal mark. The
 piece treats the wall as a window: a physical, ever-growing archive that gets sonified. Each time
-someone adds a sticker, the wall is photographed — always the whole sticker area — and that **moment**
-shapes an evolving, long-form generative music piece.
+someone adds a sticker, the wall is photographed — always the whole sticker area. Every such **capture**
+is recorded and folds into the soul. The captures the owner chooses to share are **moments**, and they
+shape an evolving, long-form generative music piece.
 
 No shared listening experience exists, by design. Each listener renders locally and independently.
 
 **Status:** the chain, the soul rules, and the instrument's shape are settled. The open items are the
-concrete feature set, the per-mapping modes, the camera mounting, end-to-end latency, and two format
+concrete feature set, the per-mapping modes, capture standardization, end-to-end latency, and two format
 questions. Each component below lists its own.
-**Last updated:** 2026-09-15
+**Last updated:** 2026-10-27
 
 ---
 
@@ -31,15 +32,16 @@ section numbers move, folder names and rule numbers do not.
 
 | Term | Meaning | Owner |
 |---|---|---|
-| **Moment** | One photographed state of the wall, showing the whole sticker area. Immutable. Never say "photo". | `01-capture/` |
+| **Capture** | One photographed state of the wall, showing the whole sticker area. Immutable. Every capture is recorded, kept locally, and folds into the lineage. Never say "photo". | `01-capture/` |
+| **Moment** | A capture the owner elects to share. Every moment is a capture. Not every capture is a moment. | `01-capture/` |
 | **Reading** | The value of one feature at one instant. It has an id and a declared range. | `03-feature-dsl/` |
 | **Soul** | The published seed. Small, fixed-width, deterministic, shared, kept forever. | `02-extraction/` |
-| **Lineage** | The bounded digest that carries the history of moments forward. | `02-extraction/` |
-| **Extraction** | The method that turns a moment, plus everything before it, into a soul. | `02-extraction/` |
+| **Lineage** | The bounded digest that carries the history of captures forward. | `02-extraction/` |
+| **Extraction** | The method that folds a capture, plus everything before it, into the next lineage, and derives a soul from it when the capture is a moment. | `02-extraction/` |
 | **Generator** | Whatever renders sound from a soul. | `07-renderer/` |
 | **Stream** | The viewer-local sequence of CC values the applet sends. Personal, disposable, kept by nobody. | `08-applet/` |
 
-`buffer`, `control`, `perturbation`, `tick`, `tap`, `test source`, and `curve` are applet terms. They
+`buffer`, `control`, `perturbation`, `tick`, `tap`, `test source`, `curve`, `probe`, and `take` are applet terms. They
 never appear in extraction, and `curve` never appears in the Mapping DSL.
 
 **The soul and the stream are both randomness derived from an image.** Blurring the two words breaks
@@ -47,14 +49,15 @@ R4, because R4's reproducibility claim only covers the soul.
 
 ## 3. The two paths
 
-**The piece.** A moment advances the work. This path runs when someone alters the wall.
+**The piece.** Every capture advances the lineage. A moment publishes a soul. This path runs when someone
+alters the wall.
 
 ```
-[01 Capture]      whole sticker area photographed -> moment
-      |
-[02 Extraction]   moment + lineage -> soul + next lineage          (R1 to R20)
-      |
-[03 Feature DSL]  declared readings from the moment
+[01 Capture]      whole sticker area photographed -> capture
+      |           the owner elects some captures -> moments
+[02 Extraction]   capture + lineage -> next lineage                (R1 to R20)
+      |           moment only: lineage -> published soul
+[03 Feature DSL]  declared readings from each capture
       |
 [04 Mapping DSL]  reading -> sound parameter, one declared mode per mapping
       |           compiles to OSC
@@ -117,14 +120,14 @@ These hold across every component. A component may add to them and may never wea
 
 | Folder | Component | Status |
 |---|---|---|
-| `01-capture/` | The wall, the camera, and which captures become moments | Election settled as R19. Camera mounting open. |
+| `01-capture/` | The wall, the camera, and which captures become moments | Capture and election settled as R19. Handheld camera settled. Standardization open. |
 | `02-extraction/` | Soul and lineage. Rules R1 to R20. The publication shape. | Rules settled. Retention and format open. |
 | `03-feature-dsl/` | The readings a moment yields | Shape settled. The concrete feature set open. |
 | `04-mapping-dsl/` | Reading to sound parameter, and the OSC it compiles to | Shape settled. Per-mapping modes open. |
 | `05-playground/` | Sonic Pi or Overtone, where Catalina composes | Settled. Engine choice open, low stakes. |
 | `06-bridge/` | The virtual MIDI port | Settled. |
 | `07-renderer/` | Strudel in the browser | Settled. |
-| `08-applet/` | The viewer instrument | Shape, loop, controls, output, and all five artistic choices settled. Readings and perturbation open. |
+| `08-applet/` | The viewer instrument | Shape, loop, controls, output, laboratory phase, and all five artistic choices settled. Readings and perturbation open. |
 
 Unsettled fragments that need working space live in the owning component's `open/` folder. A file there
 holds the question, the fixed constraints, and the options. It holds no decision, and nothing cites it as
@@ -142,7 +145,9 @@ deleted.
 
 ## 7. Working method
 
-Settle one fragment at a time. Do not scaffold the next layer while working on this one. `scripts/osc.py`
+Settle one fragment at a time. Do not scaffold the next layer while working on this one. One exception:
+the laboratory phase of `08-applet/` crosses layers on purpose, because the feature set, the
+standardization method, and the sound are found there by experiment. `scripts/osc.py`
 is the only code that exists; everything else is design, and code for a component waits on that
 component's open questions.
 
