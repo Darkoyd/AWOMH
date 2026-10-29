@@ -5,10 +5,11 @@
 
   let canvas = $state();
   const image = $derived(applet.debug ? applet.images[applet.current] : undefined);
+  const view = $derived(image ? applet.views[applet.current] : undefined);
 
   // The canvas draws the buffer, never the moment (§3.3).
   $effect(() => {
-    if (canvas && image) drawBuffer(image.buffer, canvas);
+    if (canvas && view) drawBuffer(view, canvas);
   });
 </script>
 
@@ -19,7 +20,7 @@
     <p class="note">Load two or more images in the debug panel.</p>
   {:else}
     <canvas bind:this={canvas}></canvas>
-    <span class="dims">{image.buffer.width} × {image.buffer.height}</span>
+    <span class="dims">{view.width} × {view.height}</span>
     <ProbeTable />
   {/if}
 </section>

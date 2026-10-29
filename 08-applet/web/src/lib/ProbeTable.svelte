@@ -2,12 +2,12 @@
   import { applet } from "./state.svelte.js";
   import { PROBES, computeProbes } from "./probes.js";
 
-  // One column per loaded image. Before the loop exists, every buffer is its image scaled into the
-  // buffer, with no controls and no noise, so every column is read from the same kind of source.
+  // One column per loaded image. Before the loop exists, every buffer is its image with the same
+  // controls applied and no noise, so every column is read from the same kind of source.
   const columns = $derived(
-    applet.images.map((img) => {
+    applet.views.map((view) => {
       try {
-        return { values: computeProbes(img.buffer), error: null };
+        return { values: computeProbes(view), error: null };
       } catch (err) {
         return { values: null, error: err.message };
       }

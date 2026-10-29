@@ -2,6 +2,7 @@
   import { applet } from "./lib/state.svelte.js";
   import Stage from "./lib/Stage.svelte";
   import DebugPanel from "./lib/DebugPanel.svelte";
+  import Controls from "./lib/Controls.svelte";
 
   // Number keys 1..9 select an image, so the toggle needs no pointer.
   function onkeydown(event) {
@@ -15,6 +16,9 @@
 
 <main>
   <Stage />
+  {#if applet.debug && applet.images.length}
+    <Controls />
+  {/if}
   {#if applet.debug}
     <DebugPanel />
   {/if}

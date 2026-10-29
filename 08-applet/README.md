@@ -221,6 +221,13 @@ converges to the moment and stays there. The applet at rest shows the moment.
 A control value stays inside its declared range. The ranges above are the ranges the applet enforces, not
 suggestions to the viewer.
 
+Three details of step 1. Confirmed on 2026-10-29.
+
+- Step 1 ends with a clamp to 0..1, because gain and contrast can leave the buffer's declared range
+  (§3.2).
+- `shift_x` and `shift_y` move by whole pixels, and the frame wraps around.
+- `blur` takes a fractional radius: the two outer taps carry the fraction. Edges repeat the edge pixel.
+
 Ordering inside step 1 is fixed: per-channel gain, contrast, saturation, hue rotation, blur, shift. These
 operations do not commute, so the order is part of the definition for the same reason §3.3 is.
 
@@ -443,7 +450,9 @@ Each step runs and is worth looking at before the next one starts.
    declares each probe's id, group, range, and meaning, and is the only list of probes. A spread column
    shows (max − min) / range across the loaded images.
 3. Controls. The controls alter the buffer. The canvas follows. Until step 4 exists there is no feedback,
-   so a control acts once on the image. Step 4 turns that into the equilibrium of §4.2.
+   so a control acts once on the image. Step 4 turns that into the equilibrium of §4.2. *Built
+   2026-10-29* in `web/src/lib/controls.js`. Every loaded image gets the same controls, so the probe
+   columns stay comparable.
 4. Perturbation and the loop, with the visible seed.
 5. Output. MIDI out, taps, and takes.
 
@@ -545,6 +554,9 @@ item keeps its number.
 ## 9. Not verified
 
 Do not state any of these as fact until a source exists.
+
+- That the hue matrix in `web/src/lib/controls.js` equals the `hueRotate` matrix of W3C Filter Effects
+  Level 1. It was written from memory. `hue_rotate` works either way, and the luma it keeps depends on it.
 
 - That a browser exposes a local entropy source the applet may draw from at session start. §6 item 3 needs
   one, and it names no API.
