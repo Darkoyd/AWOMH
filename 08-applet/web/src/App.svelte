@@ -4,6 +4,7 @@
   import DebugPanel from "./lib/DebugPanel.svelte";
   import Controls from "./lib/Controls.svelte";
   import Loop from "./lib/Loop.svelte";
+  import Output from "./lib/Output.svelte";
 
   // Keys 1..9 select an image and Space plays or pauses, so the loop needs no pointer.
   function onkeydown(event) {
@@ -27,6 +28,7 @@
       <Loop />
       <Controls />
     </div>
+    <Output />
   {/if}
   {#if applet.debug}
     <DebugPanel />

@@ -464,7 +464,10 @@ Each step runs and is worth looking at before the next one starts.
    `noise.js`. The noise is counter-based: each value is a hash of the seed, the tick, the position, and
    the channel, so a restart with the same seed and settings repeats the run exactly. §4.3's open items
    1, 2, and 4 are settings in debug mode. A tick takes about 12 to 14 ms at a 512 px buffer.
-5. Output. MIDI out, taps, and takes.
+5. Output. MIDI out, taps, and takes. *Built 2026-10-29* in `web/src/lib/midi.js`, `taps.js`, and
+   `take.js`. MIDI access starts from a button, so the browser asks for permission on a click. The port
+   failures of §4.4 each show a message, and the loop keeps running. The tick rate stays in the loop
+   panel for now, not in the output panel that §4.4 draws.
 
 Steps 1 to 5 build debug mode. Step 6 builds normal mode:
 
@@ -533,7 +536,10 @@ item keeps its number.
   size for each run (§5.1), and normal mode's size comes from what debug mode shows. Its upper limit is the
   resolution the raw adapter gives.
 - **What format does a take use?** It must open in a DAW or in Sonic Pi without a converter the repo
-  carries. Not settled.
+  carries. Built 2026-10-29, not confirmed: a take saves as two files. The `.csv` holds every tick: seed,
+  rate, leak, control values, noise settings, every probe, and every tap's CC. The `.mid` is a Standard
+  MIDI File, format 0, with the taps' CC values at one MIDI tick per loop tick. It assumes the rate at
+  the start of the take. Whether Sonic Pi reads either file is not verified.
 - **Does a toggle restart the loop?** A new forcing term can restart the buffer from the new image, as
   §4.5 does for a new moment, or keep the buffer and let the blend pull it across. Found by use: debug
   mode has a setting for it, and restarts by default. Images of different sizes always restart.

@@ -25,14 +25,7 @@
   const spreads = $derived(Object.fromEntries(PROBES.map((p) => [p.id, spread(p)])));
 
   // The loop's buffer, read after the blend: step 4 of the tick (§3.3).
-  const live = $derived.by(() => {
-    if (!applet.live) return null;
-    try {
-      return { values: computeProbes(applet.live), error: null };
-    } catch (err) {
-      return { values: null, error: err.message };
-    }
-  });
+  const live = $derived(applet.liveProbes);
 
   const fmt = (v) => v.toFixed(3);
   const pct = (v) => `${(v * 100).toFixed(1)}%`;
