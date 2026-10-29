@@ -2,7 +2,7 @@
 
 **In:** the published moments and their souls, read only, from `02-extraction/`.
 **Out:** a **stream** of MIDI CC via Web MIDI, through `06-bridge/` into `05-playground/`.
-**Ships as:** a static page. Vanilla JavaScript, no build step, no dependency.
+**Ships as:** a static page, built from Svelte 5 with Vite (`web/`). The per-tick work is plain JavaScript.
 
 ---
 
@@ -397,8 +397,10 @@ stays on the viewer's machine.
 Debug mode reads JPEG. It never decodes a raw format. No browser is known to decode camera raw (§8). A raw
 capture enters through the raw adapter for its format (`01-capture/`, `scripts/raw/`), which gives a JPEG.
 For Canon `.cr3`, the adapter takes the embedded preview, and the browser's own decoder decodes it.
-Confirmed on 2026-10-28. Whether debug mode runs the adapter in the browser, or loads the JPEG the
-Python adapter wrote, is not settled (§7).
+Confirmed on 2026-10-28. Debug mode runs a JavaScript twin of each adapter in the browser. The Canon twin
+is `web/cr3.js`. On 2026-10-29 it gave the same bytes as `scripts/raw/cr3.py` on all 22 local captures.
+
+Until `wall/` has a machine form, rotation is a debug-mode setting, and the viewer picks it.
 
 **Probes.** A probe declares its range and obeys §2: an out-of-range probe fails loudly. A probe id never
 appears in the Feature DSL until Catalina promotes it. Promotion is the moment a probe becomes a reading.
@@ -427,9 +429,13 @@ offline, in a DAW or in Sonic Pi, before committing to a sound in `07-renderer/`
 
 ### 5.2 Build order
 
+The code lives in `web/`. Run `npm install`, then `npm run dev` for a local server, or `npm run build`
+for the static files in `web/dist/`. The UI is Svelte. The image work (`web/src/lib/buffer.js`, `cr3.js`,
+and every later per-tick module) stays plain JavaScript, so the hot loop owes nothing to the framework.
+
 Each step runs and is worth looking at before the next one starts.
 
-1. Load two or more images. Draw one to a canvas, and toggle between them.
+1. Load two or more images. Draw one to a canvas, and toggle between them. *Built 2026-10-29.*
 2. Probes. Live numbers for every loaded image, no controls.
 3. Controls. The controls alter the buffer. The canvas follows. Until step 4 exists there is no feedback,
    so a control acts once on the image. Step 4 turns that into the equilibrium of §4.2.
@@ -499,8 +505,6 @@ item keeps its number.
 - **§4.3 Perturbation.** Unblocked. Working file: `open/perturbation.md`.
 - **Does the browser decode the extracted preview?** It is baseline JPEG (§8), and not yet run in a
   browser. Build step 1 runs it. If it fails, the fallback is a JPEG the owner exports.
-- **Where does debug mode get the JPEG of a raw capture?** It can run a JavaScript twin of the raw adapter
-  in the browser, or load the JPEG that `scripts/raw/` wrote. A twin means every adapter exists twice.
 - **What size is the normal-mode buffer?** Its aspect is the wall region's (§3.2). Debug mode sets the
   size for each run (§5.1), and normal mode's size comes from what debug mode shows. Its upper limit is the
   resolution the raw adapter gives.

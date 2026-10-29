@@ -88,10 +88,11 @@ dependency, a private repo, or a closed backend component. This is firm, not a p
 This machine has Python 3.14 and Node 20, and **no pip and no third-party Python modules**. Code under
 `scripts/` is therefore stdlib-only and runs as-is. Do not add a dependency to it without saying so.
 
-`scripts/osc.py` and `scripts/raw/cr3.py` (the Canon raw adapter) are the only code that exists. Everything
-else is design.
+`scripts/osc.py`, `scripts/raw/cr3.py` (the Canon raw adapter), and `08-applet/web/` (debug-mode step 1) are
+the only code that exists. Everything else is design.
 
-The applet is vanilla JavaScript, with no build step and no dependency. That keeps it servable by GitHub
+The applet is Svelte 5 built with Vite (`08-applet/web/`, `npm run dev` / `npm run build`). Frontend
+dependencies are pinned exactly and must carry an AGPL-compatible licence. The built output is static, which keeps it servable by GitHub
 Pages and keeps the repo AGPL-clean.
 
 Sonic Pi is not installed here, so no link that touches the playground runs on this machine.

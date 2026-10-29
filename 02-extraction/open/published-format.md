@@ -21,8 +21,8 @@ Two things to answer:
 ## Constraints that are not artistic
 
 - Static files only. No backend, no database, no server-side code. — root `README.md` §4
-- The applet is vanilla JavaScript with no build step and no dependency. A format it cannot parse with
-  what the browser already provides is a dependency in disguise. — root `README.md` §4
+- The applet and the renderer parse the format in the browser. A format that needs a parser library is a
+  dependency, and it must be argued for. — root `README.md` §4
 - Feature values enter the chain as fixed-precision integers, never as floats. A format that stores a
   float and reformats it breaks the chain across languages. — R12
 - The extraction version travels with the soul. — R7

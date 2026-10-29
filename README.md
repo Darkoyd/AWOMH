@@ -115,9 +115,12 @@ These hold across every component. A component may add to them and may never wea
 5. **A virtual MIDI port is local to one machine** and is not visible on a network. One shared static
    page therefore serves everyone, because each person's local playground feeds their own browser
    session.
-6. **Stdlib only, no build step.** Python 3.14 with no pip and no third-party module for `scripts/`.
-   Vanilla JavaScript with no build step and no dependency for anything the browser runs. This keeps the
-   site servable by GitHub Pages and the repo AGPL-clean.
+6. **Stdlib Python, built static pages.** Python 3.14 with no pip and no third-party module for
+   `scripts/`. The browser side is Svelte 5, built with Vite into plain static files. Amended on
+   2026-10-29: the applet outgrew vanilla JavaScript. Every frontend dependency is open source under a
+   licence compatible with AGPL-3.0-or-later, and is pinned to an exact version. The published site
+   holds only the built static files, so GitHub Pages still serves it with no backend. The per-tick image
+   work stays in plain JavaScript modules with no framework import.
 7. **Web MIDI needs a supported browser.** Chrome, Edge, Opera, Samsung Internet, and Firefox 108 and
    later. Not Safari on macOS or iOS, with no roadmap as of 2026. The applet needs one, and so does the
    renderer on its optional MIDI path. The default listening path does not use Web MIDI.
@@ -153,6 +156,9 @@ deleted.
 
 - **End-to-end latency and reliability of the full chain.** Every link is verified alone. The chain is
   not. This is the only question about the chain as a whole, which is why it is here.
+- **How does the built site reach GitHub Pages?** A GitHub Actions workflow can build on every push, or
+  the owner can build locally and commit the output. The workflow keeps built files out of the repo. The
+  layout of the whole site, with the applet and the renderer on it, is not designed either.
 - **How does a fork describe its wall?** Invariant 8 makes every wall-specific fact a declaration. Which
   fields the declaration holds, which component owns it, and how its version travels with the soul (as
   R7 does for the extraction version) are not designed. The facts recorded for Catalina's wall in
@@ -162,8 +168,8 @@ deleted.
 
 Settle one fragment at a time. Do not scaffold the next layer while working on this one. One exception:
 the debug mode of `08-applet/` crosses layers on purpose, because the feature set, the
-standardization method, and the sound are found there by experiment. `scripts/osc.py`
-and `scripts/raw/cr3.py` are the only code that exists; everything else is design, and code for a component waits on that
+standardization method, and the sound are found there by experiment. `scripts/osc.py`,
+`scripts/raw/cr3.py`, and `08-applet/web/` are the only code that exists; everything else is design, and code for a component waits on that
 component's open questions.
 
 Use `/verify-claim` before adding a capability claim, and `/log-source` to record the citation in the
