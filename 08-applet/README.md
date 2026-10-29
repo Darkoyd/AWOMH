@@ -415,6 +415,9 @@ promote nothing.
 | Detail | The density of edges. |
 | Spatial | The same statistics per region of a grid. This group is the most sensitive to handheld framing. |
 
+The first set is 23 probes. Brightness: mean and spread of luma. Color: mean chroma and spread of hue.
+Detail: edge energy. Spatial: mean luma and mean chroma in each region of a 3 × 3 grid.
+
 **Seed.** A test source carries no soul, so debug mode seeds the generator from a seed the viewer can
 see and set. A repeatable run makes a fair comparison possible: two perturbation settings on the same
 noise.
@@ -436,7 +439,9 @@ and every later per-tick module) stays plain JavaScript, so the hot loop owes no
 Each step runs and is worth looking at before the next one starts.
 
 1. Load two or more images. Draw one to a canvas, and toggle between them. *Built 2026-10-29.*
-2. Probes. Live numbers for every loaded image, no controls.
+2. Probes. Live numbers for every loaded image, no controls. *Built 2026-10-29.* `web/src/lib/probes.js`
+   declares each probe's id, group, range, and meaning, and is the only list of probes. A spread column
+   shows (max − min) / range across the loaded images.
 3. Controls. The controls alter the buffer. The canvas follows. Until step 4 exists there is no feedback,
    so a control acts once on the image. Step 4 turns that into the equilibrium of §4.2.
 4. Perturbation and the loop, with the visible seed.
