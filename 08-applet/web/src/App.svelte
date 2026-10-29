@@ -3,12 +3,18 @@
   import Stage from "./lib/Stage.svelte";
   import DebugPanel from "./lib/DebugPanel.svelte";
   import Controls from "./lib/Controls.svelte";
+  import Loop from "./lib/Loop.svelte";
 
-  // Number keys 1..9 select an image, so the toggle needs no pointer.
+  // Keys 1..9 select an image and Space plays or pauses, so the loop needs no pointer.
   function onkeydown(event) {
     if (!applet.debug || event.target.closest("input, select, button")) return;
+    if (event.key === " " && applet.images.length) {
+      event.preventDefault();
+      applet.loop.playing = !applet.loop.playing;
+      return;
+    }
     const k = Number(event.key) - 1;
-    if (k >= 0 && k < applet.images.length) applet.current = k;
+    if (k >= 0 && k < applet.images.length) applet.show(k);
   }
 </script>
 
@@ -17,7 +23,10 @@
 <main>
   <Stage />
   {#if applet.debug && applet.images.length}
-    <Controls />
+    <div class="side">
+      <Loop />
+      <Controls />
+    </div>
   {/if}
   {#if applet.debug}
     <DebugPanel />
@@ -33,6 +42,7 @@
 
 <style>
   main { display: flex; gap: 16px; padding: 16px; align-items: flex-start; min-height: 100vh; }
+  .side { display: flex; flex-direction: column; gap: 16px; }
   .debug-toggle {
     position: fixed; right: 10px; bottom: 10px; font: inherit; font-size: 11px; color: var(--muted);
     background: transparent; border: 1px solid var(--line); border-radius: 3px; padding: 2px 6px;

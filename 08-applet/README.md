@@ -233,7 +233,10 @@ operations do not commute, so the order is part of the definition for the same r
 
 ### 4.3 Perturbation
 
-Open. It no longer waits on §6 item 3, which settled the generator: the soul seeds it and local entropy
+Settled so far: the noise step ends with a clamp to 0..1, the same as step 1 (§4.2). The blend of step 3
+then stays inside 0..1, because it mixes two values that are already inside. Confirmed on 2026-10-29.
+
+The rest is open. It no longer waits on §6 item 3, which settled the generator: the soul seeds it and local entropy
 joins the seed at session start. No viewer-facing seed field exists, so §4.3 holds the character of the
 noise and not a seed control.
 Working file: `open/perturbation.md`.
@@ -409,6 +412,10 @@ is `web/cr3.js`. On 2026-10-29 it gave the same bytes as `scripts/raw/cr3.py` on
 
 Until `wall/` has a machine form, rotation is a debug-mode setting, and the viewer picks it.
 
+**The probe table.** It has one live column, read from the loop's buffer on every tick. Every loaded
+image also has a static column: the image with the controls applied once and no noise. The spread
+compares the static columns only, so it measures the images and not the noise. Confirmed on 2026-10-29.
+
 **Probes.** A probe declares its range and obeys §2: an out-of-range probe fails loudly. A probe id never
 appears in the Feature DSL until Catalina promotes it. Promotion is the moment a probe becomes a reading.
 
@@ -453,7 +460,10 @@ Each step runs and is worth looking at before the next one starts.
    so a control acts once on the image. Step 4 turns that into the equilibrium of §4.2. *Built
    2026-10-29* in `web/src/lib/controls.js`. Every loaded image gets the same controls, so the probe
    columns stay comparable.
-4. Perturbation and the loop, with the visible seed.
+4. Perturbation and the loop, with the visible seed. *Built 2026-10-29* in `web/src/lib/loop.js` and
+   `noise.js`. The noise is counter-based: each value is a hash of the seed, the tick, the position, and
+   the channel, so a restart with the same seed and settings repeats the run exactly. §4.3's open items
+   1, 2, and 4 are settings in debug mode. A tick takes about 12 to 14 ms at a 512 px buffer.
 5. Output. MIDI out, taps, and takes.
 
 Steps 1 to 5 build debug mode. Step 6 builds normal mode:
@@ -522,13 +532,11 @@ item keeps its number.
 - **What size is the normal-mode buffer?** Its aspect is the wall region's (§3.2). Debug mode sets the
   size for each run (§5.1), and normal mode's size comes from what debug mode shows. Its upper limit is the
   resolution the raw adapter gives.
-- **What does debug mode read for an image that is not on screen?** Only the image on screen drives the loop.
-  For the standardization test, the probes of every loaded image must come from the same kind of source.
-  That is the raw image scaled into the buffer, with no controls and no noise. Not settled.
 - **What format does a take use?** It must open in a DAW or in Sonic Pi without a converter the repo
   carries. Not settled.
 - **Does a toggle restart the loop?** A new forcing term can restart the buffer from the new image, as
-  §4.5 does for a new moment, or keep the buffer and let the blend pull it across. Found by use.
+  §4.5 does for a new moment, or keep the buffer and let the blend pull it across. Found by use: debug
+  mode has a setting for it, and restarts by default. Images of different sizes always restart.
 
 ## 8. Sources
 

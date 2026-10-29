@@ -27,7 +27,10 @@
     }
     input.value = "";
     applet.images = [...applet.images, ...added];
-    if (applet.current < 0 && applet.images.length) applet.current = 0;
+    if (applet.current < 0 && applet.images.length) {
+      applet.current = 0;
+      applet.restart();
+    }
     applet.statusError = failed.length > 0;
     applet.status = failed.length ? `Not loaded. ${failed.join(" | ")}` : `${applet.images.length} images loaded.`;
   }
@@ -36,6 +39,8 @@
     for (const img of applet.images) img.bitmap.close();
     applet.images = [];
     applet.current = -1;
+    applet.loop.playing = false;
+    applet.restart();
     applet.status = "";
   }
 
@@ -45,6 +50,7 @@
       ...img,
       buffer: makeBuffer(img.bitmap, applet.turns, applet.longEdge),
     }));
+    applet.restart();
   }
 
   function setTurns(event) {
@@ -73,7 +79,7 @@
     <legend>Shown (keys 1–9)</legend>
     {#each applet.images as img, k (k)}
       <label>
-        <input type="radio" name="image" checked={k === applet.current} onchange={() => (applet.current = k)} />
+        <input type="radio" name="image" checked={k === applet.current} onchange={() => applet.show(k)} />
         {img.name}
       </label>
     {/each}

@@ -31,10 +31,18 @@ What noise does the applet add to the buffer on each tick, and which parts of it
 3. What "feedback depth" alters. §3.1 already gives the loop its leak coefficient `a`. Depth must name
    something `a` does not, or it must go.
 4. Whether the noise amount stays inside a declared range, as every control in §4.2 does.
-5. Whether a value may leave 0 to 1 after noise, and where the clamp goes. §3.2 declares the range of the
-   buffer.
 6. How the soul and the session entropy combine into the generator's state. §6 item 3 names both inputs and
    names no method.
+
+## What debug mode has built (2026-10-29)
+
+These are settings to find answers with, not decisions.
+
+- Item 1: `character` is white per pixel, value noise at a scale, or a drifting field.
+- Item 2: `channels` is independent per channel, or one shared field.
+- Item 4: `amount` is an additive amplitude from 0 to 0.5.
+- Item 3 is not built. "Feedback depth" still names nothing that `leak` does not.
+- Item 6 is normal mode only. Debug mode uses the visible seed.
 
 ## To verify
 

@@ -5,7 +5,8 @@
 
   let canvas = $state();
   const image = $derived(applet.debug ? applet.images[applet.current] : undefined);
-  const view = $derived(image ? applet.views[applet.current] : undefined);
+  // The canvas draws the loop's buffer: what is heard and what is seen are one frame (§3.3).
+  const view = $derived(image ? (applet.live ?? applet.views[applet.current]) : undefined);
 
   // The canvas draws the buffer, never the moment (§3.3).
   $effect(() => {

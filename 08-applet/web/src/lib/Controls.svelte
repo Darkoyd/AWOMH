@@ -28,7 +28,7 @@
     </label>
   {/each}
   <button type="button" disabled={!touched} onclick={() => (applet.controls = identityValues())}>Reset all</button>
-  <p class="note">No loop yet: a control acts once on the image. Step 4 adds the feedback.</p>
+  <p class="note">Equilibrium controls settle at a steady state. Rate controls keep moving. Both act on every tick.</p>
 </aside>
 
 <style>

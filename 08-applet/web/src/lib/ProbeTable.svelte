@@ -24,9 +24,22 @@
 
   const spreads = $derived(Object.fromEntries(PROBES.map((p) => [p.id, spread(p)])));
 
+  // The loop's buffer, read after the blend: step 4 of the tick (§3.3).
+  const live = $derived.by(() => {
+    if (!applet.live) return null;
+    try {
+      return { values: computeProbes(applet.live), error: null };
+    } catch (err) {
+      return { values: null, error: err.message };
+    }
+  });
+
   const fmt = (v) => v.toFixed(3);
   const pct = (v) => `${(v * 100).toFixed(1)}%`;
-  const errors = $derived(columns.flatMap((c, k) => (c.error ? [`${applet.images[k].name}: ${c.error}`] : [])));
+  const errors = $derived([
+    ...(live?.error ? [`live: ${live.error}`] : []),
+    ...columns.flatMap((c, k) => (c.error ? [`${applet.images[k].name}: ${c.error}`] : [])),
+  ]);
 </script>
 
 {#if errors.length}
@@ -41,6 +54,7 @@
       <tr>
         <th scope="col">Probe</th>
         <th scope="col">Range</th>
+        <th scope="col" class="num live" title="The loop's buffer, tick by tick">Live</th>
         {#each applet.images as img, k}
           <th scope="col" class="num" class:current={k === applet.current} title={img.name}>{k + 1}</th>
         {/each}
@@ -50,11 +64,14 @@
     <tbody>
       {#each PROBES as p, i}
         {#if i === 0 || PROBES[i - 1].group !== p.group}
-          <tr class="group"><th colspan={applet.images.length + 3} scope="rowgroup">{p.group}</th></tr>
+          <tr class="group"><th colspan={applet.images.length + 4} scope="rowgroup">{p.group}</th></tr>
         {/if}
         <tr>
           <th scope="row" title={p.meaning}>{p.id}</th>
           <td class="range">{p.lo} – {p.hi}</td>
+          <td class="num live" class:bad={live && !live.values}>
+            {live?.values ? fmt(live.values[p.id]) : live ? "error" : "–"}
+          </td>
           {#each columns as col, k}
             <td class="num" class:current={k === applet.current} class:bad={!col.values}>
               {col.values ? fmt(col.values[p.id]) : "error"}
@@ -75,6 +92,7 @@
   tbody th { font-weight: normal; font-family: ui-monospace, monospace; font-size: 12px; }
   .group th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; padding-top: 10px; }
   .num { text-align: right; }
+  .live { font-weight: 600; border-right: 1px solid var(--line); }
   .range, .spread { color: var(--muted); }
   .current { background: var(--panel); color: var(--fg); font-weight: 600; }
   .bad { color: var(--error); }
