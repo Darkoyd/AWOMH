@@ -44,28 +44,35 @@ question about the repo, and `02-extraction/` owns it under R6.
 - The camera is handheld. The owner aims for the same framing every time, and the framing still varies
   from capture to capture. Captures must be standardized so that a framing change does not read as a
   change in the wall. Confirmed on 2026-10-28.
+- Standardization is a software step that aligns each capture to fixed points on the wall and takes the
+  sticker area from it. `02-extraction/` owns the step, because R4 lives there. Confirmed on 2026-10-29.
+- Each fork declares its own wall in `wall/`: the surface colour, the orientation in the frame, the
+  alignment points, and the bound of the sticker area. Nothing in this component names one wall (root
+  `README.md`, invariant 8). Confirmed on 2026-10-29.
+- A capture shows every alignment point and the whole sticker area that `wall/` declares.
+- Every wall keeps two rules: no sticker covers an alignment point, and no sticker goes past the declared
+  bound of the sticker area. The standardization method holds only while both hold.
+- A raw capture enters the chain through a raw adapter under `scripts/raw/`, one per camera format. The
+  first adapter is Canon `.cr3`. Confirmed on 2026-10-29.
 
 ## 4. Open questions
 
-- **How are captures standardized?** A handheld capture is never pixel-aligned with the one before it.
-  Every capture folds into the lineage, so a framing change that moves a reading enters the lineage as if
-  the wall had changed. A size check catches a moved camera. It does not catch a nudged one. The method is
-  found by experiment, in `08-applet/`'s laboratory phase, which loads several captures side by side.
-  Fixed constraints:
-  - The step must be deterministic on any machine, because replaying the archive must reproduce every
-    soul (R4, R14).
-  - Code under `scripts/` is stdlib-only. No alignment method is verified for that environment. Run
-    `/verify-claim` before anything relies on one.
-  - The step must not alter a capture. A capture is immutable.
-
-  Options, not exclusive: a physical aid at capture time (marks on the floor, a framing guide, fiducial
-  markers on the cabinet), or a software registration step before extraction. If the answer is a software
-  step, `02-extraction/` owns it, because R4 lives there.
+- **What happens to a capture that does not show every alignment point?** Every capture folds into the
+  lineage (R19), so such a capture still needs a defined result. Options: the step fails loudly and the owner retakes (the failed capture still folds in under
+  R19), or the step has a fallback.
+- **Which camera formats get an adapter next?** Common candidates are Nikon `.nef`, Sony `.arw`, and phone
+  JPEG or HEIC. Each format needs its own `/verify-claim` before its adapter is written.
 - **Where is the capture archive backed up?** It is the only copy of the chain's blocks, and it is never
   published. One lost capture makes replay impossible from that capture on (R14). A backup must stay
   private and must not enter the public repo (R13).
 
 ## 5. Sources
 
-Nothing in this component rests on a verified capability claim. It rests on a physical setup that
-Catalina confirms.
+- **Canon `.cr3` container.** An ISO BMFF (ISO/IEC 14496-12) file with Canon custom boxes. It embeds a
+  1620 × 1080 JPEG preview in a top-level `uuid` box `eaf42b5e-1c98-4b88-b9fb-b7dc406e4d16`, inside a
+  `PRVW` box: JPEG size at offset 20, JPEG data from offset 24. It also embeds a 6000 × 4000 JPEG in
+  track 1 and a 160 × 120 thumbnail. Source: lclevy/canon_cr3, observed 2026-10-28.
+  <https://github.com/lclevy/canon_cr3>
+  Tested 2026-10-28 on 23 local captures with a stdlib parser: every one holds a 1620 × 1080 preview that
+  starts `FFD8`, ends `FFD9`, and is baseline JPEG (`SOF0`, marker `FFC0`). `scripts/raw/cr3.py`
+  implements that parser.

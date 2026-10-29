@@ -207,6 +207,30 @@ The concrete format is open: `open/published-format.md`.
 - A capture of an unchanged wall still advances the lineage. A moment elected from it therefore publishes
   a new soul (R17, R19).
 - The applet reads the soul and writes nothing (R20).
+- **Extraction decodes JPEG with its own decoder.** A hand-written baseline JPEG decoder in `scripts/`,
+  stdlib only, integer arithmetic only. It is the one decoder the chain trusts, so every machine gets the
+  same pixels from one file (R4). The standard library has no JPEG decoder, and two decoders can disagree
+  (§8). Confirmed on 2026-10-29. `08-applet/` decodes with the browser, so its probes can differ slightly
+  from extraction's readings. That is acceptable, because the applet never writes a soul (R20).
+- **Standardization is a software step before the readings.** It aligns the capture to the alignment
+  points that `wall/` declares, takes the sticker area, and corrects the image. The readings come from
+  that region only. The step need not be perfect: a small difference between two captures of one wall,
+  and the residue of the correction, are an accepted source of noise in the lineage. Confirmed on
+  2026-10-29. The step stays deterministic (R4) and never alters the capture. The method is found in
+  `08-applet/`'s debug mode.
+- **The owner confirms the alignment points of every capture.** A tool proposes the points, and the owner
+  confirms or moves them. This works on any wall (root `README.md`, invariant 8). The confirmed points are
+  saved next to the capture, stay on the owner's machine, and are part of the capture archive: replay
+  needs them (R14), and they never enter the repo (R13). Confirmed on 2026-10-29.
+- **The region runs from the wall's upper edge to the declared bound of the sticker area.** The bound is
+  fixed on the wall, so the region has a fixed length. A region that ran to the frame edge would move with
+  the framing. Confirmed on 2026-10-29.
+- **A capture that does not reach the bound is filled with the declared surface colour.** The fill is
+  correct only if the missing strip held no sticker. The fill is deterministic (R4). Confirmed on
+  2026-10-29.
+- **The rotation comes from `wall/`, not from the capture.** The declaration names one fixed orientation.
+  The step reads no orientation flag, so "no other capture metadata enters extraction" stays true.
+  Confirmed on 2026-10-29.
 
 ## 7. Open questions
 
@@ -228,9 +252,13 @@ component's own.
 - **What breaks a tie between two equal timestamps?** R4 orders captures by timestamp. Two captures in
   the same clock tick need a rule that is not a file path. Reading the timestamp from a `.cr3` file with
   the standard library alone is also not verified yet. Run `/verify-claim` first.
-- **Which bytes of a capture enter extraction?** The captures are raw camera files (`.cr3`). R4 holds only
-  if the step from raw file to readings is deterministic on any machine. No decoder for this format is
-  verified for a stdlib-only environment. Run `/verify-claim` before anything relies on one.
+- **What does the JPEG decoder support?** Baseline JPEG is the minimum, because the Canon adapter gives
+  baseline (`01-capture/`). Progressive JPEG, the chroma upsampling method, and the colour conversion each
+  need a fixed, integer-only choice. A later raw adapter must give a JPEG that the decoder supports.
+- **What does the image correction do?** Exposure, colour, and perspective vary between captures. The
+  declared surface colour is a candidate reference for exposure and colour. Four alignment points are
+  enough to define a perspective correction. Which corrections the step makes is found in `08-applet/`'s
+  debug mode.
 - **Does R6 change?** Working file: `open/moment-retention.md`.
 - **What format do the published files use?** Working file: `open/published-format.md`.
 
@@ -239,3 +267,14 @@ component's own.
 - **libmapper** — real OSC-based signal-mapping framework from McGill IDMIL. The model for the
   Feature/Mapping split that R9 protects. Source: libmapper repo and IDMIL project pages.
 - The static-hosting limits that §5 relies on are in the root `README.md` §4, verified there.
+- **The Python 3.14 standard library has no JPEG decoder.** Tk's photo image reads only PNG, GIF, and
+  PPM/PGM (Tk 8.6), plus read-only SVG (Tk 9.0). `imghdr` was removed in 3.13 and never decoded pixels. On
+  this machine `_tkinter` is absent and `PIL` is absent. No source states the absence directly. It is
+  inferred from these. Observed 2026-10-29.
+  <https://www.tcl-lang.org/man/tcl9.0/TkCmd/photo.html>
+  <https://docs.python.org/3/whatsnew/3.13.html>
+- **Two JPEG decoders can give different pixels for one file.** libjpeg has three IDCT methods. The
+  libjpeg-turbo float method may give different results on different machines, and a Go decoder is not
+  pixel-identical to libjpeg. Read from search summaries, not full pages. Observed 2026-10-29.
+  <https://ssvb.github.io/2011/08/22/simd-idct-libjpeg-turbo-bitexactness.html>
+  <https://lab.nexedi.cn/kirr/go/-/commit/8bf58725b23a25a4d153a9b90624eb95c0aeca12>

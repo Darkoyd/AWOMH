@@ -11,7 +11,7 @@ No shared listening experience exists, by design. Each listener renders locally 
 **Status:** the chain, the soul rules, and the instrument's shape are settled. The open items are the
 concrete feature set, the per-mapping modes, capture standardization, end-to-end latency, and two format
 questions. Each component below lists its own.
-**Last updated:** 2026-10-27
+**Last updated:** 2026-10-29
 
 ---
 
@@ -80,6 +80,12 @@ alters the wall.
 [05 Playground]   Sonic Pi
 ```
 
+**The default listening path.** Confirmed on 2026-10-29. Strudel renders from the published soul alone.
+The listener needs a supported browser and nothing else: no playground and no virtual MIDI port. The
+chain above, through `05-playground/` and `06-bridge/`, stays available for a listener who installs Sonic
+Pi and a virtual MIDI port to hear the piece at its full extent. It is an option, not a requirement. How
+Strudel reads the soul directly is not designed yet, and `07-renderer/` owns that question.
+
 MIDI runs in opposite directions on the two paths. That is deliberate. A virtual MIDI port carries each
 direction separately, so neither path blocks the other. The two paths also run at different rates: the
 piece advances at the rate of the wall (R10), and the instrument advances at the tick rate.
@@ -113,8 +119,16 @@ These hold across every component. A component may add to them and may never wea
    Vanilla JavaScript with no build step and no dependency for anything the browser runs. This keeps the
    site servable by GitHub Pages and the repo AGPL-clean.
 7. **Web MIDI needs a supported browser.** Chrome, Edge, Opera, Samsung Internet, and Firefox 108 and
-   later. Not Safari on macOS or iOS, with no roadmap as of 2026. The renderer and the applet both need
-   one.
+   later. Not Safari on macOS or iOS, with no roadmap as of 2026. The applet needs one, and so does the
+   renderer on its optional MIDI path. The default listening path does not use Web MIDI.
+8. **Distributable to any wall.** Anyone may run The Window on their own wall: fork the repo, take
+   captures, extract the soul locally, and publish to GitHub Pages. Confirmed on 2026-10-29. Three
+   consequences:
+   - Nothing in the chain may depend on one particular wall. A fact about one wall (its colour, its
+     alignment points, its orientation in the frame) is that wall's declaration, not a rule of the piece.
+   - The person who forks is comfortable with git and a terminal. Extraction stays stdlib Python under
+     `scripts/`, run on the owner's machine, because captures never leave it (R13).
+   - A fork ships with Catalina's composition as the default sound, and the owner may replace it.
 
 ## 5. The components
 
@@ -126,8 +140,9 @@ These hold across every component. A component may add to them and may never wea
 | `04-mapping-dsl/` | Reading to sound parameter, and the OSC it compiles to | Shape settled. Per-mapping modes open. |
 | `05-playground/` | Sonic Pi or Overtone, where Catalina composes | Settled. Engine choice open, low stakes. |
 | `06-bridge/` | The virtual MIDI port | Settled. |
-| `07-renderer/` | Strudel in the browser | Settled. |
-| `08-applet/` | The viewer instrument | Shape, loop, controls, output, laboratory phase, and all five artistic choices settled. Readings and perturbation open. |
+| `07-renderer/` | Strudel in the browser | Default path from the soul alone settled. How Strudel reads the soul open. |
+| `wall/` | This fork's wall: surface, orientation, alignment points, sticker-area bound, the wall's rules | Catalina's wall declared in prose. Machine form open. |
+| `08-applet/` | The viewer instrument | Shape, loop, controls, output, debug mode, and all five artistic choices settled. Readings and perturbation open. |
 
 Unsettled fragments that need working space live in the owning component's `open/` folder. A file there
 holds the question, the fixed constraints, and the options. It holds no decision, and nothing cites it as
@@ -138,17 +153,17 @@ deleted.
 
 - **End-to-end latency and reliability of the full chain.** Every link is verified alone. The chain is
   not. This is the only question about the chain as a whole, which is why it is here.
-- **Whether the published site needs the local pipeline at all.** A static soul file could let a Strudel
-  page render with no playground and no virtual MIDI port, which would remove `05-playground/` and
-  `06-bridge/` from the shipped path and leave them as composition tools. Deferred by Catalina on
-  2026-09-08.
+- **How does a fork describe its wall?** Invariant 8 makes every wall-specific fact a declaration. Which
+  fields the declaration holds, which component owns it, and how its version travels with the soul (as
+  R7 does for the extraction version) are not designed. The facts recorded for Catalina's wall in
+  `01-capture/` and `02-extraction/` are the first example of one.
 
 ## 7. Working method
 
 Settle one fragment at a time. Do not scaffold the next layer while working on this one. One exception:
-the laboratory phase of `08-applet/` crosses layers on purpose, because the feature set, the
+the debug mode of `08-applet/` crosses layers on purpose, because the feature set, the
 standardization method, and the sound are found there by experiment. `scripts/osc.py`
-is the only code that exists; everything else is design, and code for a component waits on that
+and `scripts/raw/cr3.py` are the only code that exists; everything else is design, and code for a component waits on that
 component's open questions.
 
 Use `/verify-claim` before adding a capability claim, and `/log-source` to record the citation in the

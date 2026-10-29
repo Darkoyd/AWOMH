@@ -18,7 +18,7 @@ What does the readings section show, and how does it show a range?
   `03-feature-dsl/`
 - A reading stays inside its declared range. An out-of-range reading is a broken extractor and must fail
   loudly. — §2
-- Before the feature set exists, the section shows probes. That is the laboratory phase. — §5.1
+- Before the feature set exists, the section shows probes. That is debug mode. — §5.1
 - Readings are taken after the blend, from the same buffer state that is drawn. Step 4 of the tick. — §3.3
 - Sharing ids does not make the applet an extractor. It shares the vocabulary, not the role. — R20
 

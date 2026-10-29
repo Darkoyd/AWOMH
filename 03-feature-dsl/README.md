@@ -63,7 +63,7 @@ side is named, ranged, and visible here instead of reaching into internal state.
   - `04-mapping-dsl/` cannot assign per-mapping modes to features that do not exist.
   - `08-applet/`'s readings section has nothing to display.
 
-  The set is found by experiment, in `08-applet/`'s laboratory phase. A candidate there is a **probe**,
+  The set is found by experiment, in `08-applet/`'s debug mode. A candidate there is a **probe**,
   not a reading. A probe enters this DSL only when Catalina promotes it, so no placeholder id becomes
   vocabulary by accident.
 - **Does a feature survive handheld framing?** The camera is handheld (`01-capture/`). A feature whose

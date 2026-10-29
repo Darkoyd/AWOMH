@@ -38,14 +38,14 @@ and they appear nowhere else in the project.
 | Term | Meaning |
 |---|---|
 | **Buffer** | The mutable working image inside the applet. It starts as a copy of a moment. |
-| **Test source** | An image the viewer loads in place of a moment, to try the instrument. Laboratory only (§5). It is never a moment, it carries no soul, and nothing derived from it leaves the browser. |
+| **Test source** | An image the viewer loads in place of a moment, to try the instrument. Debug mode only (§5). It is never a moment, it carries no soul, and nothing derived from it leaves the browser. |
 | **Control** | One deterministic parameter the viewer sets. It alters the buffer. |
 | **Perturbation** | The noise the applet adds to the buffer each tick. |
 | **Tick** | One advance of the loop. |
-| **Tap** | The binding of one reading to one output CC. In the laboratory phase, a tap binds a probe. |
+| **Tap** | The binding of one reading to one output CC. In debug mode, a tap binds a probe. |
 | **Curve** | A per-tap function from 0..1 to 0..1. §4.4. It never appears in the Mapping DSL. |
-| **Probe** | A candidate reading. Laboratory only (§5). It has an id and a declared range, and it is not in the Feature DSL. It becomes a reading only when Catalina promotes it into `03-feature-dsl/`. |
-| **Take** | A recording of one laboratory run, saved as a file on the owner's machine. Laboratory only (§5). It is not a stream, and the shipped applet keeps no take. |
+| **Probe** | A candidate reading. Debug mode only (§5). It has an id and a declared range, and it is not in the Feature DSL. It becomes a reading only when Catalina promotes it into `03-feature-dsl/`. |
+| **Take** | A recording of one debug-mode run, saved as a file on the viewer's machine. Debug mode only (§5). It is not a stream, and normal mode keeps no take. |
 
 The applet does not define **soul**, **lineage**, or **extraction**. Those belong to `02-extraction/`.
 
@@ -116,9 +116,21 @@ that looks plausible. The same argument applies to every low-magnitude control.
 
 RGB, not RGBA. A moment has no alpha channel, and dropping it removes a quarter of the work per pass.
 
-The buffer runs at a fixed square working resolution, independent of the moment's own size. The moment is
+The buffer runs at a fixed working resolution, independent of the moment's own size. The moment is
 scaled into it once, on load. Readings are statistics over the whole frame, so they do not need the
 camera's detail, and a fixed size makes the per-tick cost a constant the viewer's machine cannot alter.
+
+The buffer has the aspect ratio of the image it holds. It is not square. A square buffer forces a crop,
+which cuts away part of the sticker area, a pad, which adds constant pixels that bias every reading, or a
+stretch, which distorts every shape. A buffer with the image's own aspect needs none of the three.
+Confirmed on 2026-10-29.
+
+The image it holds is the standardized wall region (`02-extraction/`), not the whole capture. The capture
+is 3:2. The wall region is not: it is the wall's width by a fixed length below its upper edge, so it is tall
+and narrow. Its aspect is fixed when that length is fixed, and `02-extraction/` holds that question.
+
+Normal mode has one fixed buffer size, and that size is not chosen yet. In debug mode the size is a
+setting (§5.1). Debug mode shows which size is enough.
 
 ### 3.3 The order of a tick
 
@@ -322,7 +334,7 @@ move through it.
 On load the applet fetches the published list of moments. Each entry names one moment: its image and the
 soul extracted from it. The viewer selects an entry. Selection does two things, and no more:
 
-1. The image loads into the buffer through §3.2's scale-into-a-fixed-square step.
+1. The image loads into the buffer through §3.2's scale-into-a-fixed-buffer step.
 2. The noise seed comes from that entry's soul.
 
 A different selection restarts the loop from that moment. It does not blend two moments, and it does not
@@ -342,54 +354,72 @@ The concrete format of the list and of a soul record is not settled here.
 `02-extraction/open/moment-retention.md` holds whether an elected moment keeps an image at all. This
 section states what the applet needs from the format. It states no schema.
 
-## 5. The laboratory phase and the build order
+## 5. Debug mode and the build order
 
-The applet reaches its shipped form through a laboratory phase. Confirmed on 2026-10-28. The laboratory is
-where Catalina plays with the medium before anything about it is fixed. It is how the project finds:
+The applet has two modes: normal mode and debug mode. Debug mode is the normal applet with extra features.
+It is permanent. It is not a phase that ends when the applet ships. Confirmed on 2026-10-29. It replaces
+the laboratory phase confirmed on 2026-10-28, and keeps that phase's features.
+
+Debug mode is where anyone plays with the medium before anything about it is fixed. It is how the
+project finds:
 
 - the feature set (`03-feature-dsl/`),
-- the standardization method for handheld captures (`01-capture/`),
+- the standardization method for handheld captures (`02-extraction/`),
 - the character of the perturbation (§4.3),
 - the sounds worth committing to in `07-renderer/`.
 
-The laboratory produces decisions, not artefacts. A decision it leads to goes into the component that owns
-it. Rough edges cost nothing here.
+Debug mode produces decisions, not artefacts. A decision it leads to goes into the component that owns
+it. Rough edges cost nothing here. Every fork has its own wall, so every fork's owner uses debug mode to
+find what works for that wall (root `README.md`, invariant 8).
 
-### 5.1 What the laboratory allows
+### 5.1 What debug mode adds
 
-| | Shipped applet | Laboratory |
+| | Normal mode | Debug mode |
 |---|---|---|
 | Images | Published moments only (§4.5) | Two or more test sources at once (§2) |
 | What is read | Readings, under Feature DSL ids | Probes, under free ids |
 | Seed | The soul and session entropy. Hidden. Nothing repeats (§6 item 3). | Visible and settable. The same seed and the same settings repeat the same run. |
+| Buffer size | One fixed size (§3.2) | A setting. A probe value depends on the size, so compare runs at one size. |
 | Output | Live MIDI CC | Live MIDI CC, and takes |
 
-None of the laboratory column ships.
+Every viewer may open debug mode. The published applet opens in normal mode, and one small button
+switches to debug mode. The button is there, and it does not ask for attention. Confirmed on 2026-10-29.
+Debug mode writes nothing either (R20). A test source stays in the viewer's browser, and a take is a file
+the viewer chooses to save.
 
-**Images.** The laboratory loads two or more images and shows one at a time. The owner toggles between
+**Images.** Debug mode loads two or more images and shows one at a time. The viewer toggles between
 them. The image on screen is the forcing term of §3.1, and the loop runs on it. Confirmed on 2026-10-28.
-The lab still computes every probe for every loaded image and lists the values together. This is the
+Debug mode still computes every probe for every loaded image and lists the values together. This is the
 standardization test: two captures of an unchanged wall must give nearly equal probes, and a probe that
 moves with the framing feeds camera noise into the lineage. A capture loaded here is a test source. It
-stays on the owner's machine.
+stays on the viewer's machine.
 
-The laboratory reads JPEG, never `.cr3`. A capture's `.cr3` file serves soul generation only
-(`02-extraction/`). Confirmed on 2026-10-28. No browser is known to decode `.cr3` (§8).
-
-The laboratory takes its JPEG from inside the `.cr3` file: the embedded `PRVW` preview, 1620 × 1080.
-Hand-written box parsing finds it, and the browser's own decoder decodes it. There is no export step and no
-dependency. Confirmed on 2026-10-28. §8 holds the layout and the test on every local capture.
+Debug mode reads JPEG. It never decodes a raw format. No browser is known to decode camera raw (§8). A raw
+capture enters through the raw adapter for its format (`01-capture/`, `scripts/raw/`), which gives a JPEG.
+For Canon `.cr3`, the adapter takes the embedded preview, and the browser's own decoder decodes it.
+Confirmed on 2026-10-28. Whether debug mode runs the adapter in the browser, or loads the JPEG the
+Python adapter wrote, is not settled (§7).
 
 **Probes.** A probe declares its range and obeys §2: an out-of-range probe fails loudly. A probe id never
 appears in the Feature DSL until Catalina promotes it. Promotion is the moment a probe becomes a reading.
 
-**Seed.** A test source carries no soul, so the laboratory seeds the generator from a seed the owner can
+The first probes cover four groups. Confirmed on 2026-10-29. The groups set where the search starts. They
+promote nothing.
+
+| Group | What it measures |
+|---|---|
+| Brightness | The level of light, and how much it varies across the frame. |
+| Color | How saturated the frame is, and how wide its spread of hues is. |
+| Detail | The density of edges. |
+| Spatial | The same statistics per region of a grid. This group is the most sensitive to handheld framing. |
+
+**Seed.** A test source carries no soul, so debug mode seeds the generator from a seed the viewer can
 see and set. A repeatable run makes a fair comparison possible: two perturbation settings on the same
 noise.
 
 **Takes.** A take records one run, tick by tick: the seed, the control values, every probe, and every
-tap's CC value. The lab offers it as a file download to the owner's machine. A take never enters the repo,
-and it reaches no soul and no lineage (R20). It exists so that the owner can shape sound from a run
+tap's CC value. Debug mode offers it as a file download to the viewer's machine. A take never enters the repo,
+and it reaches no soul and no lineage (R20). It exists so that a viewer can shape sound from a run
 offline, in a DAW or in Sonic Pi, before committing to a sound in `07-renderer/`.
 
 **Live output.** The taps send MIDI CC through a virtual port (`06-bridge/`) to any receiver: a DAW or
@@ -406,15 +436,15 @@ Each step runs and is worth looking at before the next one starts.
 4. Perturbation and the loop, with the visible seed.
 5. Output. MIDI out, taps, and takes.
 
-Steps 1 to 5 are the laboratory. Step 6 is the phase boundary:
+Steps 1 to 5 build debug mode. Step 6 builds normal mode:
 
-6. Ship. Promoted probes become readings under Feature DSL ids. The file input, the probes, the seed
-   field, and takes are removed. The moment picker and the soul read of §4.5 arrive. Permission failures,
+6. Normal mode. Promoted probes become readings under Feature DSL ids. The file input, the probes, the
+   seed field, and takes stay in debug mode. The moment picker and the soul read of §4.5 arrive. Permission failures,
    a missing port, and a stable reading display get their care here and not before. §4.4 already holds
    the port-failure rules that step 6 implements.
 
 The soul read belongs to step 6, because no moment publishes a soul until `02-extraction/` exists. Until
-then the laboratory's visible seed takes its place.
+then debug mode's visible seed takes its place.
 
 ## 6. Artistic choices
 
@@ -422,21 +452,23 @@ None of these has a technically correct answer. All five are settled. Item numbe
 item keeps its number.
 
 1. **Whose image.** *Settled 2026-09-10.* A viewer may load an image of their own. It is a **test source**
-   (§2), and the file input is laboratory only. §5 holds the phase boundary. The shipped applet opens
-   published moments through §4.5 and nothing else.
-   It does not ship because the wall is the subject of the instrument. A shipped file input points the
-   instrument at anything, and that is the half of this item that alters what the piece is. It exists
-   because the laboratory is looking for the feature set, and a second image is the cheapest way to see
+   (§2), and the file input is debug mode only (§5). Normal mode opens published moments through §4.5
+   and nothing else.
+   *Amended 2026-10-29.* The file input ships, inside debug mode, and every viewer can reach it through
+   one small button (§5.1). The original reason not to ship it still names the cost: a file input points
+   the instrument at anything. Normal mode keeps the wall as the subject, and debug mode is the declared
+   exception. It exists
+   because debug mode is looking for the feature set, and a second image is the cheapest way to see
    whether a reading tracks the wall or tracks one photograph.
-   A test source carries no soul, so the laboratory seeds it from a visible seed (§5.1). Item 3's
+   A test source carries no soul, so debug mode seeds it from a visible seed (§5.1). Item 3's
    shipped claim is unaffected: in the shipped applet the generator still takes the selected moment's
    soul and that entropy.
    Nothing derived from a test source is a reading of the wall. It produces no soul and no lineage, the
    applet writes no file (R20, §1), and `moments/` stays as R6 leaves it. §3.2 is unaffected: any image is
-   scaled once, on load, into the fixed square working buffer, so both kinds use one load path.
+   scaled once, on load, into the fixed working buffer, so both kinds use one load path.
 2. **Permanent or a laboratory.** *Settled 2026-09-10.* The applet ships. The root `README.md` §5 records
    it as a component of the piece. What this document adds: the work reaches that end state through a
-   laboratory phase, and §5 holds the phase boundary. A shipped applet is the setting item 3 answered in,
+   debug mode, and §5 holds the line between the modes. A shipped applet is the setting item 3 answered in,
    and item 3 weighed reproducibility against the piece and chose against it.
 3. **The noise generator.** *Settled 2026-09-10.* The generator takes two things: the selected moment's
    soul, through §4.5, and local entropy drawn once at session start. Step 2 of the tick stays the only
@@ -445,8 +477,9 @@ item keeps its number.
    nowhere (R20). A session therefore happens once. Nobody can replay it, send it to somebody else, or
    investigate it by running it again. That is the declared cost of the choice, in the same way §3.1
    declares the cost of `a = 0`.
-   The laboratory is exempt, and the exemption ends at the phase boundary. Its seed is visible and
-   settable, and a run repeats (§5.1). Confirmed on 2026-10-28.
+   Debug mode is exempt. Its seed is visible and settable, and a run repeats (§5.1). Confirmed on
+   2026-10-28. *Amended 2026-10-29:* every viewer can open debug mode, so every viewer can choose a
+   repeatable run. Normal mode keeps the hidden seed and the unrepeatable session.
    What every viewer shares is the soul, not the stream. Two viewers who select the same moment start from
    the same skeleton and diverge on the first tick. That is R4, and it is not shared listening. The soul
    with the tick rate names that shared start. It is not a record, and it replays nothing. A seed is not a
@@ -466,8 +499,14 @@ item keeps its number.
 - **§4.3 Perturbation.** Unblocked. Working file: `open/perturbation.md`.
 - **Does the browser decode the extracted preview?** It is baseline JPEG (§8), and not yet run in a
   browser. Build step 1 runs it. If it fails, the fallback is a JPEG the owner exports.
-- **Is 1620 × 1080 enough?** The applet scales every image into its fixed working buffer (§3.2), and the
-  buffer's size is not stated yet.
+- **Where does debug mode get the JPEG of a raw capture?** It can run a JavaScript twin of the raw adapter
+  in the browser, or load the JPEG that `scripts/raw/` wrote. A twin means every adapter exists twice.
+- **What size is the normal-mode buffer?** Its aspect is the wall region's (§3.2). Debug mode sets the
+  size for each run (§5.1), and normal mode's size comes from what debug mode shows. Its upper limit is the
+  resolution the raw adapter gives.
+- **What does debug mode read for an image that is not on screen?** Only the image on screen drives the loop.
+  For the standardization test, the probes of every loaded image must come from the same kind of source.
+  That is the raw image scaled into the buffer, with no controls and no noise. Not settled.
 - **What format does a take use?** It must open in a DAW or in Sonic Pi without a converter the repo
   carries. Not settled.
 - **Does a toggle restart the loop?** A new forcing term can restart the buffer from the new image, as
@@ -475,13 +514,7 @@ item keeps its number.
 
 ## 8. Sources
 
-- **Canon `.cr3` container.** An ISO BMFF (ISO/IEC 14496-12) file with Canon custom boxes. It embeds a
-  1620 × 1080 JPEG preview in a top-level `uuid` box `eaf42b5e-1c98-4b88-b9fb-b7dc406e4d16`, inside a
-  `PRVW` box: JPEG size at offset 20, JPEG data from offset 24. It also embeds a 6000 × 4000 JPEG in
-  track 1 and a 160 × 120 thumbnail. Source: lclevy/canon_cr3, observed 2026-10-28.
-  <https://github.com/lclevy/canon_cr3>
-  Tested 2026-10-28 on all 23 local captures with a stdlib parser: every one holds a 1620 × 1080 preview
-  that starts `FFD8`, ends `FFD9`, and is baseline JPEG (`SOF0`, marker `FFC0`).
+- **Canon `.cr3` container** — see `01-capture/`, which owns that claim.
 - **Browsers decode no camera raw format.** MDN's image type guide lists APNG, AVIF, GIF, JPEG, JPEG XL,
   PNG, SVG, and WebP, plus BMP, ICO, TIFF, and XBM. No camera raw format appears. This does not prove
   absence, and no source states that any browser decodes `.cr3`. Observed 2026-10-28.

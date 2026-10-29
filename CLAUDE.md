@@ -21,7 +21,8 @@ Every other decision lives in the component folder that owns it. One folder, one
 | `05-playground/` | Sonic Pi or Overtone. Where Catalina composes. Not the shipped renderer. |
 | `06-bridge/` | The virtual MIDI port, in both directions. |
 | `07-renderer/` | Strudel in the browser. The shipped renderer. |
-| `08-applet/` | The viewer instrument. |
+| `08-applet/` | The viewer instrument. Normal mode and debug mode. |
+| `wall/` | This fork's wall: the facts true of one wall only. A fork replaces it. |
 
 **A decision and an open question live in exactly one place.** Cite rules by number (R1 to R20) and
 components by folder. Never cite a section number across documents: section numbers move, folder names and
@@ -87,7 +88,8 @@ dependency, a private repo, or a closed backend component. This is firm, not a p
 This machine has Python 3.14 and Node 20, and **no pip and no third-party Python modules**. Code under
 `scripts/` is therefore stdlib-only and runs as-is. Do not add a dependency to it without saying so.
 
-`scripts/osc.py` is the only code that exists. Everything else is design.
+`scripts/osc.py` and `scripts/raw/cr3.py` (the Canon raw adapter) are the only code that exists. Everything
+else is design.
 
 The applet is vanilla JavaScript, with no build step and no dependency. That keeps it servable by GitHub
 Pages and keeps the repo AGPL-clean.
@@ -105,5 +107,5 @@ Treat code under `scripts/` as scaffolding that waits on those answers.
 ## Working style
 
 Settle one fragment at a time. Do not scaffold the next layer while working on this one. One exception:
-the laboratory phase of `08-applet/` crosses layers on purpose, because the feature set, the
+the debug mode of `08-applet/` crosses layers on purpose, because the feature set, the
 standardization method, and the sound are found there by experiment.

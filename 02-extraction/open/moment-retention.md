@@ -29,7 +29,7 @@ What stays open: **does R6 change, so that every elected moment keeps its image 
 - Extraction never re-derives an old soul. Corrections append. — R8
 - Static only, 1GB site limit. — root `README.md` §4
 - The applet writes nothing, on any answer. — R20
-- The applet scales every image once into a fixed square working buffer, so it never needs the camera's
+- The applet scales every image once into a fixed working buffer, so it never needs the camera's
   detail. — `08-applet/README.md` §3.2
 
 ## What each side costs

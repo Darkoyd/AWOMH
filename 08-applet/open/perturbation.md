@@ -17,7 +17,7 @@ What noise does the applet add to the buffer on each tick, and which parts of it
 - The buffer is a `Float32Array` of `width * height * 3` values in the range 0 to 1, RGB only. — §3.2
 - The blend of §3.1 pulls the buffer back toward the moment on every tick. Noise acts against that pull,
   not on a single frame.
-- In the laboratory the seed is visible and settable, and a run repeats. That is how a setting is
+- In debug mode the seed is visible and settable, and a run repeats. That is how a setting is
   investigated. — §5.1
 - The generator takes the selected moment's soul and local entropy drawn once at session start. No
   viewer-facing seed field exists, and the entropy is written nowhere. — §6 item 3, §4.5
